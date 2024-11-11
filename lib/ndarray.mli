@@ -13,25 +13,27 @@ val rand : int list -> t
 
 val shape : t -> int list
 
-val val_at : t -> int list -> float
+val ndim : t -> int
+
+val at : t -> int list -> float
 
 val add : t -> t -> t
 
-val add : t -> float -> t
+val add_scalar : t -> float -> t
 
 val sub : t -> t -> t
 
-val sub : t -> float -> t
+val sub_scalar : t -> float -> t
 
 (** Element-wise multiplication of two ts. *)
 val mul : t -> t -> t
 
-val mul : t -> float -> t
+val mul_scalar : t -> float -> t
 
 (** Element-wise division of two ts. *)
 val div : t -> t -> t
 
-val div : t -> float -> t
+val div_scalar : t -> float -> t
 
 (** Matrix multiplication of two ts. *)
 val matmul : t -> t -> t
