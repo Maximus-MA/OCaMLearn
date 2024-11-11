@@ -1,4 +1,3 @@
-open Tensor
 
 type tensor = Tensor.t
 

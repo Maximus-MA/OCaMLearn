@@ -1,5 +1,3 @@
-open Tensor
-
 type tensor = Tensor.t
 
 (** The signature for a neural network module. *)
@@ -8,7 +6,7 @@ module type Model = sig
 
   (** Forward pass through the module. *)
   val init: t -> unit
-  
+
   val forward : t -> tensor -> tensor
 
   (** Get the parameters of the module. *)
