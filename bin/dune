@@ -1,0 +1,4 @@
+(executable
+ (public_name OCaML)
+ (name main)
+ (libraries OCaML))
