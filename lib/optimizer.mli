@@ -1,20 +1,16 @@
 (** The type representing an optimizer. *)
-type t
+type tensor = Tensor.t
 
-(** Create an SGD optimizer. *)
-val sgd : params:tensor list -> lr:float -> t
+type t = {
+  parameters: tensor list;
+  step: unit -> unit;
+  zero_grad: unit -> unit;
+}
 
-(** Create an Adam optimizer. *)
-val adam :
-  params:tensor list ->
-  lr:float ->
-  beta1:float ->
-  beta2:float ->
-  eps:float ->
-  t
+val create_SGD : params:tensor list -> lr:float -> t
 
-(** Perform an optimization step. *)
+val create_Adam : params:tensor list -> lr:float -> beta1:float -> beta2:float -> eps:float -> t
+
 val step : t -> unit
 
-(** Zero the gradients of all parameters. *)
 val zero_grad : t -> unit

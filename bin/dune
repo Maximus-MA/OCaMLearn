@@ -1,4 +1,3 @@
 (executable
- (public_name OCaML)
  (name main)
- (libraries OCaML))
+ (libraries ndarray tensor model optimizer core))

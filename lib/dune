@@ -1,2 +1,19 @@
 (library
- (name OCaML))
+ (name ndarray)
+ (modules ndarray)
+ (libraries core))
+
+(library
+ (name tensor)
+ (modules tensor)
+ (libraries core ndarray))
+
+(library
+ (name model)
+ (modules model)
+ (libraries core tensor))
+
+(library
+ (name optimizer)
+ (modules optimizer)
+ (libraries core tensor))
