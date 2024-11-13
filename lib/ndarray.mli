@@ -1,137 +1,153 @@
-type ndarray = {
-    data: float array;
-    shape: int array;
+(* src/ndarray.mli *)
+
+type t = {
+  data: float array;
+  shape: int array;
 }
-(** An ndarray type [t] containing [data] in a flattened array, and [shape] as a list of dimensions. *)
 
-val create : float array -> int array -> ndarray
-(** [create data shape] creates an ndarray [t] with the given [data] and [shape]. *)
+val numel : int array -> int
+(** [numel shape] returns the total number of elements for an ndarray with the given [shape]. *)
 
-val zeros : int array -> ndarray
-(** [zeros shape] creates an ndarray of the specified [shape] filled with zeros. *)
+val strides : int array -> int array
+(** [strides shape] returns the strides for an ndarray with the given [shape]. *)
 
-val ones : int array -> ndarray
-(** [ones shape] creates an ndarray of the specified [shape] filled with ones. *)
+val sum_multiplied : float array -> float array -> float
+(** [sum_multiplied a b] computes the sum of element-wise products of arrays [a] and [b]. *)
 
-val rand : int array -> ndarray
-(** [rand shape] creates an ndarray of the specified [shape] with randomly generated values. *)
+val is_broadcastable : int array -> int array -> bool
+(** [is_broadcastable shape1 shape2] checks if two shapes [shape1] and [shape2] are compatible for broadcasting. *)
 
-val shape : ndarray -> int array
-(** [shape t] returns the shape of the ndarray [t] as a list of dimensions. *)
+val broadcast_shape : int array -> int array -> int array
+(** [broadcast_shape shape1 shape2] returns the resulting shape when broadcasting [shape1] and [shape2]. *)
 
-val dim : ndarray -> int
-(** [dim t] returns the number of dimensions of the ndarray [t]. *)
+val add : t -> t -> t
+(** [add a b] performs element-wise addition of ndarrays [a] and [b] with broadcasting. *)
 
-val get : ndarray -> int array -> float
-(** [get t index_list] returns the value of the ndarray [t] at the specified index list[index_list]. *)
+val sub : t -> t -> t
+(** [sub a b] performs element-wise subtraction of ndarrays [a] and [b] with broadcasting. *)
 
-val set : ndarray -> int array -> float -> unit
-(** [set t idx value] updates the element at index [idx] in [t] with [value]. *)
+val mul : t -> t -> t
+(** [mul a b] performs element-wise multiplication of ndarrays [a] and [b] with broadcasting. *)
 
-val add : ndarray -> ndarray -> ndarray
-(** [add t1 t2] performs element-wise addition of ndarrays [t1] and [t2]. *)
+val div : t -> t -> t
+(** [div a b] performs element-wise division of ndarrays [a] and [b] with broadcasting. *)
 
-val add_scalar : ndarray -> float -> ndarray
-(** [add_scalar t x] adds scalar [x] to each element in the ndarray [t]. *)
+val matmul : t -> t -> t
+(** [matmul a b] performs matrix multiplication on ndarrays [a] and [b], supporting batch dimensions. *)
 
-val sub : ndarray -> ndarray -> ndarray
-(** [sub t1 t2] performs element-wise subtraction of ndarray [t2] from [t1]. *)
+val create : float array -> int array -> t
+(** [create data shape] creates a new ndarray with the specified [data] and [shape]. *)
 
-val sub_scalar : ndarray -> float -> ndarray
-(** [sub_scalar t x] subtracts scalar [x] from each element in the ndarray [t]. *)
+val create_float : float -> t
+(** [create_float value] creates a new ndarray initialized with a single float [value]. *)
 
-val mul : ndarray -> ndarray -> ndarray
-(** [mul t1 t2] performs element-wise multiplication of ndarrays [t1] and [t2]. *)
+val create_int : int -> t
+(** [create_int value] creates a new ndarray initialized with a single integer [value]. *)
 
-val mul_scalar : ndarray -> float -> ndarray
-(** [mul_scalar t x] multiplies each element in the ndarray [t] by scalar [x]. *)
+val zeros : int array -> t
+(** [zeros shape] creates an ndarray of the given [shape] filled with zeros. *)
 
-val div : ndarray -> ndarray -> ndarray
-(** [div t1 t2] performs element-wise division of ndarray [t1] by ndarray [t2]. *)
+val ones : int array -> t
+(** [ones shape] creates an ndarray of the given [shape] filled with ones. *)
 
-val div_scalar : ndarray -> float -> ndarray
-(** [div_scalar t x] divides each element in the ndarray [t] by scalar [x]. *)
+val rand : int array -> t
+(** [rand shape] creates an ndarray of the given [shape] filled with random values between 0 and 1. *)
 
-val matmul : ndarray -> ndarray -> ndarray
-(** [matmul t1 t2] performs matrix multiplication of ndarrays [t1] and [t2]. *)
+val xavier_init : int array -> t
+(** [xavier_init shape] creates an ndarray with the given [shape] initialized using Xavier initialization. *)
 
-val transpose : ndarray -> ndarray
-(** [transpose t] returns the transpose of ndarray [t]. *)
+val kaiming_init : int array -> t
+(** [kaiming_init shape] creates an ndarray with the given [shape] initialized using Kaiming initialization. *)
 
-val reshape : ndarray -> shape:int array -> ndarray
-(** [reshape t ~shape] reshapes ndarray [t] to the specified [shape]. *)
+val shape : t -> int array
+(** [shape arr] returns the shape of the ndarray [arr]. *)
 
-val to_array : ndarray -> float array
-(** [to_array t] converts the ndarray [t] to a float array. *)
+val dim : t -> int
+(** [dim arr] returns the number of dimensions of the ndarray [arr]. *)
 
-val slice : ndarray -> (int * int) list -> ndarray
-(** [slice t ranges] extracts a sub-array from [t] based on [ranges], where each pair in [ranges] specifies the start and end index for each dimension. *)
+val at : t -> int array -> float
+(** [at arr indices] returns the value at the specified [indices] in the ndarray [arr]. *)
 
-val fill : ndarray -> float -> unit
-(** [fill t value] sets all elements in [t] to the specified [value]. *)
+val reshape : t -> int array -> t
+(** [reshape arr new_shape] reshapes the ndarray [arr] to [new_shape] and returns a new ndarray. *)
 
-val sum : ndarray -> ?dim:int -> ndarray
-(** [sum ?dim t] computes the sum of all elements in ndarray [t]. 
-    If [dim] is provided, it computes the sum along the specified dim, 
-    returning a ndarray with those dimensions reduced. *)
+val set : t -> int array -> float -> unit
+(** [set arr idx value] updates the element at index [idx] in [arr] with [value]. *)
 
-val mean : ndarray -> ?dim:int -> ndarray
-(** [mean ?dim t] computes the mean of all elements in ndarray [t]. 
-    If [dim] is provided, it computes the mean along the specified dim, 
-    returning a ndarray with those dimensions reduced. *)
+val transpose : t -> t
+(** [transpose arr] returns the transpose of the ndarray [arr]. *)
 
-val variance : ndarray -> ?dim:int -> ndarray
-(** [variance t] calculates the variance of all elements in the ndarray [t]. 
-    If [dim] is provided, it computes the variance along the specified dim, 
-    returning a ndarray with those dimensions reduced. *)
+val to_array : t -> float array
+(** [to_array arr] converts the ndarray [arr] to a float array. *)
 
-val std : ndarray -> ?dim:int -> ndarray
-(** [std t] calculates the standard deviation of all elements in the ndarray [t]. 
-    If [dim] is provided, it computes the std along the specified dim, 
-    returning a ndarray with those dimensions reduced. *)
+val slice : t -> (int * int) list -> t
+(** [slice arr ranges] extracts a sub-array from [arr] based on [ranges], where each pair in [ranges] specifies the start and end index for each dimension. *)
 
-val normalize : ndarray -> ?dim:int -> ndarray
-(** [normalize t] normalizes tensor [t] by scaling its values to have a mean of 0 and a standard deviation of 1.
-    If [dim] is provided, it normalizes along the specified dim, 
-    returning a ndarray with those dimensions reduced. *)    
+val fill : t -> float -> unit
+(** [fill arr value] sets all elements in [arr] to the specified [value]. *)
 
-val max : ndarray -> ?dim:int -> ndarray
-(** [max ?dim t] computes the maximum value of all elements in ndarray [t]. 
-    If [dim] is provided, it computes the maximum along the specified dim, 
-    returning a ndarray with those dimensions reduced. *)
+val sum : t -> float
+(** [sum arr] computes the sum of all elements in the ndarray [arr]. *)
 
-val min : ndarray -> ?dim:int -> ndarray
-(** [min ?dim t] computes the minimum value of all elements in ndarray [t]. 
-    If [dim] is provided, it computes the minimum along the specified dim, 
-    returning a ndarray with those dimensions reduced. *)
+val mean : t -> float
+(** [mean arr] computes the mean of all elements in the ndarray [arr]. *)
 
-val argmax : ndarray -> ?dim:int -> ndarray
-(** [argmax ?dim t] returns a ndarray with the indices of the maximum values along the specified [dim] of ndarray [t].
-    If [dim] is not provided, it returns the index of the maximum value in the flattened ndarray.
-*)
+val var : t -> float
+(** [var arr] calculates the variance of all elements in the ndarray [arr]. *)
 
-val argmin : ndarray -> ?dim:int -> ndarray
-(** [argmin ?dim t] returns a ndarray with the indices of the minimum values along the specified [dim] of ndarray [t].
-    If [dim] is not provided, it returns the index of the minimum value in the flattened ndarray.
-*)
+val std : t -> float
+(** [std arr] calculates the standard deviation of all elements in the ndarray [arr]. *)
 
-val exp : ndarray -> ndarray
-(** [exp t] computes the exponential of each element in [t]. *)
+val max : t -> float
+(** [max arr] computes the maximum value of all elements in the ndarray [arr]. *)
 
-val log : ndarray -> ndarray
-(** [log t] computes the natural logarithm of each element in [t]. *)
+val min : t -> float
+(** [min arr] computes the minimum value of all elements in the ndarray [arr]. *)
 
-val sqrt : ndarray -> ndarray
-(** [sqrt t] computes the square root of each element in [t]. *)
+val argmax : t -> int
+(** [argmax arr] returns the index of the maximum value in the ndarray [arr]. *)
 
-val pow : ndarray -> int -> ndarray
-(** [pow t x] raises each element in [t] to the power of [x]. *)
+val argmin : t -> int
+(** [argmin arr] returns the index of the minimum value in the ndarray [arr]. *)
 
-val broadcast_to : ndarray -> int array -> ndarray
-(** [broadcast_to t shape] broadcasts the ndarray [t] to a new [shape]. This allows operations with different-shaped arrays by expanding [t] as needed. *)
+val dsum : t -> int -> t
+(** [dsum arr dim] computes the sum of elements in [arr] along the specified dimension [dim], returning an ndarray with that dimension reduced. *)
 
-val expand_dims : ndarray -> int -> ndarray
-(** [expand_dims t dim] adds a new dimension of size 1 at the specified [dim] in [t]. *)
+val dmean : t -> int -> t
+(** [dmean arr dim] computes the mean of elements in [arr] along the specified dimension [dim], returning an ndarray with that dimension reduced. *)
 
-val squeeze : ndarray -> ndarray
-(** [squeeze t] removes dimensions of size 1 from [t]. *)
+val dvar : t -> int -> t
+(** [dvar arr dim] calculates the variance of elements in [arr] along the specified dimension [dim], returning an ndarray with that dimension reduced. *)
+
+val dstd : t -> int -> t
+(** [dstd arr dim] calculates the standard deviation of elements in [arr] along the specified dimension [dim], returning an ndarray with that dimension reduced. *)
+
+val dmax : t -> int -> t
+(** [dmax arr dim] computes the maximum value of elements in [arr] along the specified dimension [dim], returning an ndarray with that dimension reduced. *)
+
+val dmin : t -> int -> t
+(** [dmin arr dim] computes the minimum value of elements in [arr] along the specified dimension [dim], returning an ndarray with that dimension reduced. *)
+
+val dargmax : t -> int -> t
+(** [dargmax arr dim] returns an ndarray with the indices of the maximum values along the specified dimension [dim] of [arr]. *)
+
+val dargmin : t -> int -> t
+(** [dargmin arr dim] returns an ndarray with the indices of the minimum values along the specified dimension [dim] of [arr]. *)
+
+val exp : t -> t
+(** [exp arr] computes the exponential of each element in [arr]. *)
+
+val log : t -> t
+(** [log arr] computes the natural logarithm of each element in [arr]. *)
+
+val sqrt : t -> t
+(** [sqrt arr] computes the square root of each element in [arr]. *)
+
+val pow : t -> float -> t
+(** [pow arr x] raises each element in [arr] to the power of [x]. *)
+
+val expand_dims : t -> int -> t
+(** [expand_dims arr dim] adds a new dimension of size 1 at the specified [dim] in [arr]. *)
+
+val squeeze : t -> t
+(** [squeeze arr] removes dimensions of size 1 from [arr]. *)
