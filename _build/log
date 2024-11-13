@@ -1,6 +1,0 @@
-# dune init project OCaML
-# OCAMLPARAM: unset
-# Shared cache: disabled
-# Shared cache location: /Users/msz/.cache/dune/db
-# Workspace root: /Users/msz/Projects/OCaML/OCaML
-# Auto-detected concurrency: 8

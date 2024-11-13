@@ -1,80 +1,161 @@
-type ndarray = Ndarray.t
+type tensor = tensor.t
+(** An alias for the tensor type from the tensor module, representing the data structure for tensor data and gradients. *)
+
 type t = {
-    data: ndarray;
-    grad: ndarray;
+    data: tensor;
+    grad: tensor;
     requires_grad: bool;
     backward_fn: (unit -> unit) option;
     prev: t list;
 }
+(** A type [t] representing a tensor, with:
+    - [data]: the tensor containing the tensor's data.
+    - [grad]: an tensor holding the tensor's gradient.
+    - [requires_grad]: a boolean indicating if gradient tracking is enabled.
+    - [backward_fn]: an optional function to compute gradients for backpropagation.
+    - [prev]: a list of preceding tensors, representing dependencies for gradient computation.
+*)
 
-(** {1 Tensor Creation} *)
+val from_tensor : ?requires_grad:bool -> tensor -> t
+(** [from_tensor ?requires_grad tensor] creates a tensor from the given [tensor], with optional [requires_grad] to enable gradient computation. *)
 
-(** Create a tensor from a given ndarray. *)
-val from_ndarray : ?requires_grad:bool -> ndarray -> t
-
-(** Create a tensor filled with zeros of the specified shape. *)
 val zeros : ?requires_grad:bool -> int list -> t
+(** [zeros ?requires_grad shape] creates a tensor filled with zeros, with the specified [shape] and an optional [requires_grad] flag. *)
 
-(** Create a tensor filled with ones of the specified shape. *)
 val ones : ?requires_grad:bool -> int list -> t
+(** [ones ?requires_grad shape] creates a tensor filled with ones, with the specified [shape] and an optional [requires_grad] flag. *)
 
 val rand : ?requires_grad:bool -> int list -> t
-
-(** Create a tensor from a float array. *)
-
-(** {1 Tensor Properties} *)
+(** [rand ?requires_grad shape] creates a tensor with random values, of the specified [shape] and an optional [requires_grad] flag. *)
 
 val ndim : t -> int
+(** [ndim t] returns the number of dimensions of tensor [t]. *)
 
-val at : t -> int list -> float
+val get : t -> int list -> float
+(** [get t index_list] returns the value of the tensor [t] at the specified index list[index_list]. *)
 
-(** Get the data of the tensor as an ndarray. *)
-val to_ndarray : t -> ndarray
+val set : t -> int list -> float -> unit
+(** [set t idx value] updates the element at index [idx] in [t] with [value]. *)
 
-(** Get the gradient of the tensor as an ndarray. *)
-val get_grad : t -> ndarray
+val to_tensor : t -> tensor
+(** [to_tensor t] returns the underlying tensor data of tensor [t]. *)
 
-(** Check if the tensor requires gradient computation. *)
+val get_grad : t -> tensor
+(** [get_grad t] returns the gradient of tensor [t] as an tensor. *)
+
+val set_grad : t -> tensor -> unit
+(** [set_grad t grad] sets the gradient of tensor [t] in-place to the given [grad] value.
+    This updates the tensor's gradient directly, which is more efficient for mutable arrays.
+*)
+
 val get_requires_grad : t -> bool
+(** [get_requires_grad t] checks whether tensor [t] requires gradient computation. *)
 
 val set_requires_grad : t -> bool -> t
+(** [set_requires_grad t flag] sets the [requires_grad] attribute of tensor [t] to [flag], returning a new tensor if [flag] changes. *)
 
-(** Get the shape of the tensor. *)
-
-(** Reset the gradient of the tensor to zero. *)
 val zero_grad : t -> unit
+(** [zero_grad t] resets the gradient of tensor [t] to zero. *)
 
-(** {1 Tensor Operations} *)
-
-(** Add two tensors element-wise. Supports broadcasting. *)
 val add : t -> t -> t
+(** [add t1 t2] performs element-wise addition of tensors [t1] and [t2], supporting broadcasting. *)
 
-(** Add a scalar to all elements of the tensor. *)
 val add_scalar : t -> float -> t
+(** [add_scalar t x] adds scalar [x] to each element of tensor [t]. *)
 
-(** Subtract two tensors element-wise. Supports broadcasting. *)
 val sub : t -> t -> t
+(** [sub t1 t2] performs element-wise subtraction of tensor [t2] from [t1], supporting broadcasting. *)
 
-(** Subtract a scalar from all elements of the tensor. *)
 val sub_scalar : t -> float -> t
+(** [sub_scalar t x] subtracts scalar [x] from each element of tensor [t]. *)
 
-(** Multiply two tensors element-wise. Supports broadcasting. *)
 val mul : t -> t -> t
+(** [mul t1 t2] performs element-wise multiplication of tensors [t1] and [t2], supporting broadcasting. *)
 
-(** Multiply all elements of the tensor by a scalar. *)
 val mul_scalar : t -> float -> t
+(** [mul_scalar t x] multiplies each element of tensor [t] by scalar [x]. *)
 
-(** Divide two tensors element-wise. Supports broadcasting. *)
 val div : t -> t -> t
+(** [div t1 t2] performs element-wise division of tensor [t1] by tensor [t2], supporting broadcasting. *)
 
-(** Divide all elements of the tensor by a scalar. *)
 val div_scalar : t -> float -> t
+(** [div_scalar t x] divides each element of tensor [t] by scalar [x]. *)
 
-(** Perform matrix multiplication between two tensors. *)
 val matmul : t -> t -> t
+(** [matmul t1 t2] performs matrix multiplication between tensors [t1] and [t2]. *)
 
-(** Transpose the tensor. *)
 val transpose : t -> t
+(** [transpose t] returns the transpose of tensor [t]. *)
 
-(** Reshape the tensor to the specified shape. *)
 val reshape : t -> shape:int list -> t
+(** [reshape t ~shape] reshapes tensor [t] to the specified [shape]. *)
+
+val sum : t -> ?dim:int -> t
+(** [sum ?dim t] computes the sum of all elements in tensor [t]. 
+    If [dim] is provided, it computes the sum along the specified axes, 
+    returning a tensor with those dimensions reduced. *)
+
+val mean : t -> ?dim:int -> t
+(** [mean ?dim t] computes the mean of all elements in tensor [t]. 
+    If [dim] is provided, it computes the mean along the specified axes, 
+    returning a tensor with those dimensions reduced. *)
+
+val max : t -> ?dim:int -> t
+(** [max ?dim t] computes the maximum value of all elements in tensor [t]. 
+    If [dim] is provided, it computes the maximum along the specified axes, 
+    returning a tensor with those dimensions reduced. *)
+
+val min : t -> ?dim:int -> t
+(** [min ?dim t] computes the minimum value of all elements in tensor [t]. 
+    If [dim] is provided, it computes the minimum along the specified axes, 
+    returning a tensor with those dimensions reduced. *)
+
+val argmax : t -> ?dim:int -> t
+(** [argmax ?dim t] returns a tensor with the indices of the maximum values along the specified [dim] of tensor [t].
+    If [dim] is not provided, it returns the index of the maximum value in the flattened tensor.
+*)
+
+val argmin : t -> ?dim:int -> t
+(** [argmin ?dim t] returns a tensor with the indices of the minimum values along the specified [dim] of tensor [t].
+    If [dim] is not provided, it returns the index of the minimum value in the flattened tensor.
+*)
+
+val variance : t -> ?dim:int -> t
+(** [variance t] calculates the variance of all elements in the tensor [t]. 
+    If [dim] is provided, it computes the variance along the specified dim, 
+    returning a tensor with those dimensions reduced. *)
+
+val std : t -> ?dim:int -> t
+(** [std t] calculates the standard deviation of all elements in the tensor [t]. 
+    If [dim] is provided, it computes the std along the specified dim, 
+    returning a tensor with those dimensions reduced. *)
+
+val normalize : t -> ?dim:int -> t
+(** [normalize t] normalizes tensor [t] by scaling its values to have a mean of 0 and a standard deviation of 1.
+    If [dim] is provided, it normalizes along the specified dim, 
+    returning a tensor with those dimensions reduced. *)    
+
+val exp : t -> t
+(** [exp t] computes the exponential of each element in tensor [t]. *)
+
+val log : t -> t
+(** [log t] computes the natural logarithm of each element in tensor [t]. *)
+
+val pow : t -> int -> t
+(** [pow t x] raises each element in tensor [t] to the power [x]. *)
+
+val sqrt : t -> t
+(** [sqrt t] computes the square root of each element in tensor [t]. *)
+
+val clone : t -> t
+(** [clone t] creates a deep copy of tensor [t], including its data and gradient properties. *)
+
+val concatenate : t list -> int -> t
+(** [concatenate tensors dim] concatenates the list of tensors [tensors] along the specified [dim]. *)
+
+val split : t -> int -> t list
+(** [split t dim] splits tensor [t] along the specified [dim] into a list of sub-tensors. *)
+
+val detach : t -> t
+(** [detach t] creates a copy of tensor [t] with no gradient tracking. 
+    This is useful to stop a tensor from participating in gradient computation. *)
