@@ -1,9 +1,8 @@
 type t = {
     data: float array;
-    ndim: int;
     shape: int list;
 }
-(** An ndarray type [t] containing [data] in a flattened array, [ndim] as the number of dimensions, and [shape] as a list of dimensions. *)
+(** An ndarray type [t] containing [data] in a flattened array, and [shape] as a list of dimensions. *)
 
 val create : float array -> int list -> t
 (** [create data shape] creates an ndarray [t] with the given [data] and [shape]. *)
