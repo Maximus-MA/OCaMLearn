@@ -23,8 +23,6 @@ module Linear : Model = struct
   let create (n_input : int) (n_output : int) : t =
     let weights = Array.init n_output (fun _ -> Array.init n_input (fun _ -> Random.float 1.0)) in
     let bias = Array.init n_output (fun _ -> Random.float 1.0) in
-  {parameters= { weights=weights; bias=bias }; forward=forward; get_parameters=parameters}
-
-
+  {parameters= { weights=weights; bias=bias }; forward=forward; get_parameters=get_parameters}
 
 end
