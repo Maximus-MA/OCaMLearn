@@ -19,22 +19,22 @@ type t = {
 val from_tensor : ?requires_grad:bool -> tensor -> t
 (** [from_tensor ?requires_grad tensor] creates a tensor from the given [tensor], with optional [requires_grad] to enable gradient computation. *)
 
-val zeros : ?requires_grad:bool -> int list -> t
+val zeros : ?requires_grad:bool -> int array -> t
 (** [zeros ?requires_grad shape] creates a tensor filled with zeros, with the specified [shape] and an optional [requires_grad] flag. *)
 
-val ones : ?requires_grad:bool -> int list -> t
+val ones : ?requires_grad:bool -> int array -> t
 (** [ones ?requires_grad shape] creates a tensor filled with ones, with the specified [shape] and an optional [requires_grad] flag. *)
 
-val rand : ?requires_grad:bool -> int list -> t
+val rand : ?requires_grad:bool -> int array -> t
 (** [rand ?requires_grad shape] creates a tensor with random values, of the specified [shape] and an optional [requires_grad] flag. *)
 
 val ndim : t -> int
 (** [ndim t] returns the number of dimensions of tensor [t]. *)
 
-val get : t -> int list -> float
+val get : t -> int array -> float
 (** [get t index_list] returns the value of the tensor [t] at the specified index list[index_list]. *)
 
-val set : t -> int list -> float -> unit
+val set : t -> int array -> float -> unit
 (** [set t idx value] updates the element at index [idx] in [t] with [value]. *)
 
 val to_tensor : t -> tensor
@@ -87,7 +87,7 @@ val matmul : t -> t -> t
 val transpose : t -> t
 (** [transpose t] returns the transpose of tensor [t]. *)
 
-val reshape : t -> shape:int list -> t
+val reshape : t -> shape:int array -> t
 (** [reshape t ~shape] reshapes tensor [t] to the specified [shape]. *)
 
 val sum : t -> ?dim:int -> t

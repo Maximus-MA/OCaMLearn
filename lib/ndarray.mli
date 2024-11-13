@@ -1,31 +1,31 @@
 type t = {
     data: float array;
-    shape: int list;
+    shape: int array;
 }
 (** An ndarray type [t] containing [data] in a flattened array, and [shape] as a list of dimensions. *)
 
-val create : float array -> int list -> t
+val create : float array -> int array -> t
 (** [create data shape] creates an ndarray [t] with the given [data] and [shape]. *)
 
-val zeros : int list -> t
+val zeros : int array -> t
 (** [zeros shape] creates an ndarray of the specified [shape] filled with zeros. *)
 
-val ones : int list -> t
+val ones : int array -> t
 (** [ones shape] creates an ndarray of the specified [shape] filled with ones. *)
 
-val rand : int list -> t
+val rand : int array -> t
 (** [rand shape] creates an ndarray of the specified [shape] with randomly generated values. *)
 
-val shape : t -> int list
+val shape : t -> int array
 (** [shape t] returns the shape of the ndarray [t] as a list of dimensions. *)
 
 val dim : t -> int
 (** [dim t] returns the number of dimensions of the ndarray [t]. *)
 
-val get : t -> int list -> float
+val get : t -> int array -> float
 (** [get t index_list] returns the value of the ndarray [t] at the specified index list[index_list]. *)
 
-val set : t -> int list -> float -> unit
+val set : t -> int array -> float -> unit
 (** [set t idx value] updates the element at index [idx] in [t] with [value]. *)
 
 val add : t -> t -> t
@@ -58,7 +58,7 @@ val matmul : t -> t -> t
 val transpose : t -> t
 (** [transpose t] returns the transpose of ndarray [t]. *)
 
-val reshape : t -> shape:int list -> t
+val reshape : t -> shape:int array -> t
 (** [reshape t ~shape] reshapes ndarray [t] to the specified [shape]. *)
 
 val to_array : t -> float array
@@ -127,7 +127,7 @@ val sqrt : t -> t
 val pow : t -> int -> t
 (** [pow t x] raises each element in [t] to the power of [x]. *)
 
-val broadcast_to : t -> int list -> t
+val broadcast_to : t -> int array -> t
 (** [broadcast_to t shape] broadcasts the ndarray [t] to a new [shape]. This allows operations with different-shaped arrays by expanding [t] as needed. *)
 
 val expand_dims : t -> int -> t
