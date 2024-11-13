@@ -1,8 +1,5 @@
 (* Type Definitions *)
-type ndarray = {
-  data: float array;   (* The tensor's data stored as a flat array *)
-  shape: int array;    (* The tensor's shape as an array of dimensions *)
-}
+type ndarray = Ndarray.t
 
 type t = {
   data: ndarray;                    (* The tensor's data as an ndarray *)
