@@ -509,12 +509,11 @@ done
 
 ## Library Dependencies
 
-We primarily use standard OCaml libraries:
 
-- **Array**: For standard array manipulations.
-- **Stdlib**: For basic OCaml functions and utilities.
+- **Core**: We primarily use Array module which is wrapped as our Ndarray. 
 
-These libraries are part of the OCaml standard library, so no additional testing is required for them.
+The Core library was widely used in this course, so no additional testing is required here*.\
+*Discussed with and approved by Prof. Scott Smith.
 
 
 
