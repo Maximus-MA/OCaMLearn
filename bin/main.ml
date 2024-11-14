@@ -71,7 +71,7 @@ for epoch = 1 to num_epochs do
     let loss = Model.forward criterion [ outputs; labels ] in
 
     (* Backward pass *)
-    Utils.backward loss;
+    Utils.backprop loss;
 
     (* Update parameters *)
     optimizer.step ();
