@@ -1,17 +1,46 @@
 type ndarray = Ndarray.t
 
+(* Represents a dataset consisting of data and labels. *)
 type t = {
-  data : ndarray;  (** The data for the dataset. *)
-  label : ndarray;  (** The labels for the dataset. *)
+  data : ndarray;  (* The data for the dataset. *)
+  label : ndarray; (* The labels for the dataset. *)
 }
 
-val get_item : t -> int -> ndarray*ndarray
-(** [get_item dataset idx] returns the sample at index [idx] from the dataset. *)
+(* 
+   Retrieves a sample from the dataset.
 
+   Parameters:
+   - `dataset`: The dataset instance to retrieve the sample from.
+   - `idx`: The index of the sample to retrieve.
+
+   Returns:
+   - A tuple containing:
+     - The data tensor for the sample.
+     - The label tensor for the sample.
+ *)
+val get_item : t -> int -> ndarray * ndarray
+
+(* 
+   Shuffles the dataset.
+
+   Parameters:
+   - `dataset`: The dataset instance to shuffle.
+
+   Returns:
+   - A new dataset where the samples have been randomly shuffled.
+ *)
 val shuffle : t -> t
-(** [shuffle dataset] returns a new dataset with samples randomly shuffled. *)
 
+(* 
+   Splits the dataset into two parts.
+
+   Parameters:
+   - `dataset`: The dataset instance to split.
+   - `ratio`: A float specifying the fraction of the dataset to include in the first part.
+
+   Returns:
+   - A tuple containing:
+     - The first dataset, containing the first `ratio` fraction of samples.
+     - The second dataset, containing the remaining samples.
+ *)
 val split : t -> float -> t * t
-(** [split dataset ratio] splits the dataset into two parts based on the given ratio.
-    - The first dataset contains the first [ratio] fraction of samples.
-    - The second dataset contains the remaining samples. *)
