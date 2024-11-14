@@ -361,7 +361,7 @@ let optimizer = create_SGD ~params:parameters ~lr:0.01 in
 
 (* Step 3: Perform a forward and backward pass, then update parameters *)
 let loss = ... (* Compute loss based on forward pass *) in
-Tensor.backward loss;  (* Compute gradients via backpropagation *)
+utils.backprop loss;  (* Compute gradients via backpropagation *)
 
 (* Step 4: Update parameters and reset gradients *)
 step optimizer;
@@ -453,10 +453,10 @@ for epoch = 1 to num_epochs do
     Utils.backprop loss;
 
     (* Update parameters *)
-    optimizer.step ();
+    step optimizer;
 
     (* Zero the gradients *)
-    optimizer.zero_grad ();
+    zero_grad optimizer;
 
     (* Print training progress *)
     if batch_idx mod 100 = 0 then
