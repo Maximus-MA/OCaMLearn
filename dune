@@ -1,27 +1,27 @@
 (rule
   (target OCaML.zip)
   (deps 
-    lib/dune
-    lib/dataloader.mli
-    lib/dataloader.ml
-    lib/dataset.mli
-    lib/dataset.ml
-    lib/utils.mli
-    lib/utils.ml
-    lib/transform.mli
-    lib/transform.ml
-    lib/tensor.mli
-    lib/tensor.ml
-    lib/optimizer.mli
-    lib/optimizer.ml
-    lib/model.mli
-    lib/model.ml
-    lib/ndarray.mli
-    lib/ndarray.ml
-    test/dune
-    test/tests.ml
-    bin/dune
-    bin/main.ml
+    src/lib/dune
+    src/lib/dataloader.mli
+    src/lib/dataloader.ml
+    src/lib/dataset.mli
+    src/lib/dataset.ml
+    src/lib/utils.mli
+    src/lib/utils.ml
+    src/lib/transform.mli
+    src/lib/transform.ml
+    src/lib/tensor.mli
+    src/lib/tensor.ml
+    src/lib/optimizer.mli
+    src/lib/optimizer.ml
+    src/lib/model.mli
+    src/lib/model.ml
+    src/lib/ndarray.mli
+    src/lib/ndarray.ml
+    src/test/dune
+    src/test/tests.ml
+    src/bin/dune
+    src/bin/main.ml
   )
   (action
     (run zip -R OCaML.zip %{deps})))
