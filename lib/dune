@@ -17,3 +17,23 @@
  (name optimizer)
  (modules optimizer)
  (libraries core tensor))
+
+(library
+ (name transform)
+ (modules transform)
+ (libraries core tensor))
+
+(library
+ (name dataset)
+ (modules dataset)
+ (libraries core ndarray))
+
+(library
+ (name dataloader)
+ (modules dataloader)
+ (libraries core tensor dataset transform))
+
+(library
+ (name utils)
+ (modules utils)
+ (libraries core tensor))

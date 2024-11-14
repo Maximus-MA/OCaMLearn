@@ -4,7 +4,7 @@ type tensor = Tensor.t
 
 type t = {
   parameters: tensor list;                (* List of tensors representing the layer's parameters *)
-  forward_fn: t -> tensor list -> tensor; (* Forward function for layer computation *)
+  forward_fn: tensor list -> tensor; (* Forward function for layer computation *)
 }
 
 (* Placeholder for unimplemented functions *)

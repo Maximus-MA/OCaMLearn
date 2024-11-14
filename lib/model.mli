@@ -2,7 +2,7 @@ type tensor = Tensor.t
 
 type t = {
     parameters: tensor list;
-    forward_fn: t -> tensor list -> tensor;
+    forward_fn: tensor list -> tensor;
 }
 
 val forward : t -> tensor list -> tensor

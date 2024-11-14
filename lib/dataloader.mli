@@ -2,7 +2,7 @@ type dataset = Dataset.t
 
 type tensor = Tensor.t
 
-type transorm = Transform.t
+type transform = Transform.t
 
 type tensor_dataset = {
     data : tensor;
@@ -15,7 +15,7 @@ type t = {
   total_batches : int;          (** Total number of batches in the dataset. *)
 }
 
-val create : dataset -> batch_size:int -> shuffle:bool -> ?transorms: transorm list -> t
+val create : dataset -> batch_size:int -> shuffle:bool -> ?transorms: transform list -> t
 (** [create dataset batch_size shuffle] creates a data loader with the specified [dataset],
     [batch_size], and [shuffle] option.
 *)
