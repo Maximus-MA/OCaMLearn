@@ -147,7 +147,7 @@ In this example:
 
 
 
-### Dataset&Dataloader Design
+### Dataset & Dataloader & Transform Design
 
 #### 1. Overview
 
@@ -212,6 +212,32 @@ The `DataLoader` module provides the following core functionalities:
 - **`create`**: Initializes a new data loader instance with configurable batch size, shuffling options, and optional transformations.
 - **`get_batch`**: Retrieves a specific batch of data samples and labels by batch index, enabling controlled access to data during model training.
 - **`get_total_batches`**: Returns the total number of batches available, facilitating iteration planning and tracking within training loops.
+
+#### `Transform` Module
+
+The `Transform` module provides a set of operations designed to preprocess and augment tensors. These transformations are crucial in preparing data to match the model's requirements and for introducing variations that improve model generalization. They can be applied dynamically during data loading or preprocessing stages.
+
+##### Transform Structure
+
+```ocaml
+type t = tensor -> tensor
+(* A transformation is a function that takes a tensor as input and returns a transformed tensor. *)
+```
+
+The `Transform` structure allows for modular and composable operations. Each transformation function adheres to the same type signature, making them easy to integrate into data pipelines.
+
+##### Key Functionalities
+
+The `Transform` module provides the following core transformations:
+
+- **`normalize`**: Standardizes the tensor to have a mean of 0 and standard deviation of 1, preparing it for models sensitive to scale.
+- **`resize`**: Adjusts the dimensions of the tensor to the desired width and height.
+- **`rotate`**: Rotates the tensor by a specified angle, introducing rotational variations.
+- **`translate`**: Shifts the tensor along the x and y axes by given offsets.
+- **`scale`**: Resizes the tensor dynamically by applying scaling factors along the x and y dimensions.
+- **`flip`**: Flips the tensor horizontally, vertically, or both, enhancing data variability.
+
+---
 
 #### 2. Mock Use
 
