@@ -8,17 +8,6 @@ Our project aims to develop a machine learning library in OCaml that provides es
 
 
 
-## Library Dependencies
-
-We primarily use standard OCaml libraries:
-
-- **Array**: For standard array manipulations.
-- **Stdlib**: For basic OCaml functions and utilities.
-
-These libraries are part of the OCaml standard library, so no additional testing is required for them.
-
-
-
 ## Module Design Detail
 
 
@@ -81,18 +70,6 @@ let test_max () =
 ```
 
 In this test, we initialize `data` and `shape`, then use `create` to generate an `ndarray`. The `max` function is called to find the maximum value, and an assertion is used to verify the result.
-
-#### 3. Implementation
-
-We have implemented almost every function for `ndarray` and written thorough tests for all finished functions. This includes:
-
-- Initialization methods (custom, Xavier, Kaiming)
-- Broadcasting operations
-- Element-wise and matrix operations
-- Statistical functions (e.g., `sum`, `mean`, `max`, `min`) with axis support
-- Reshaping and slicing functionalities
-
-Our tests validate that each function performs as expected, ensuring robust and reliable operation of the library.
 
 
 
@@ -170,7 +147,7 @@ In this example:
 
 
 
-### Dataset Design
+### Dataset&Dataloader Design
 
 #### 1. Overview
 
@@ -203,6 +180,39 @@ The `Dataset` module provides the following core functionalities:
 - **`shuffle`**: Returns a new dataset with randomly shuffled samples.
 - **`split`**: Divides the dataset into two parts based on a specified ratio, often used to create training and validation sets.
 
+
+
+
+##### `DataLoader` Module
+
+The `DataLoader` module is designed to manage and organize data batching, shuffling, and optional data transformations for efficient training workflows in deep learning. It provides functions that enable seamless retrieval of data batches for iterative model training, with options for both sequential and randomized access.
+
+##### DataLoader  Structure
+
+```ocaml
+type t = {
+  dataset : tensor_dataset;  (* Tensor dataset used for loading batches. *)
+  batch_size : int;          (* Number of samples per batch. *)
+  total_batches : int;       (* Total number of batches available. *)
+}
+
+```
+
+In the `DataLoader` structure:
+
+- **`dataset`**: Stores the dataset of tensors, consisting of both data samples and labels, for loading in batches.
+- **`batch_size`**: Specifies the number of data samples per batch, controlling the unit of data fed to the model at each step.
+- **`total_batches`**: Indicates the total number of batches available in the dataset, based on the batch size and the dataset size.
+This structure ensures that each data sample is directly associated with a label, allowing for efficient data access and manipulation.
+
+##### Key Functionalities
+
+The `DataLoader` module provides the following core functionalities:
+
+- **`create`**: Initializes a new data loader instance with configurable batch size, shuffling options, and optional transformations.
+- **`get_batch`**: Retrieves a specific batch of data samples and labels by batch index, enabling controlled access to data during model training.
+- **`get_total_batches`**: Returns the total number of batches available, facilitating iteration planning and tracking within training loops.
+
 #### 2. Mock Use
 
 The following will show how to use the `Dataset` and `Dataloader` modules.
@@ -225,8 +235,9 @@ let train_set, val_set = split dataset 0.8
 (* Splitting the dataset into 80% training and 20% validation *)
 
 (* Step 4: Initialize the Dataloader *)
-let batch_size = 2 in
-let dataloader = Dataloader.create ~dataset:train_set ~batch_size ~shuffle:true  
+let batch_size = 2
+let transfroms = [Transform.resize; Transform.flip]
+let dataloader = Dataloader.create ~dataset:train_set ~batch_size ~shuffle:true ~transforms
 (* Create the dataloader with batching *)
 
 (* Step 5: Retrieve Batches *)
@@ -495,11 +506,24 @@ done
 ```
 
 
-# Project Implementation Timeline
 
-## Phase 1: Foundational Modules (11/13 - 11/27)
+## Library Dependencies
 
-### 1. Ndarray Module (Chuan Chen, Rui Wang)
+We primarily use standard OCaml libraries:
+
+- **Array**: For standard array manipulations.
+- **Stdlib**: For basic OCaml functions and utilities.
+
+These libraries are part of the OCaml standard library, so no additional testing is required for them.
+
+
+
+# Project Implementation Plan
+
+### Phase 1: Foundational Modules (11/13 - 11/27)
+
+#### 1. Ndarray Module (Chuan Chen, Rui Wang)
+
 - **Goals**: Implement a foundational data structure for multidimensional arrays with support for common operations.
 - **Steps**:
   - Define the foundational  `Ndarray` type
@@ -507,25 +531,27 @@ done
   - Implement statistical operations: mean, variance, standard deviation, min, and max.
   - Implement broadcasting logic to support operations across different shapes.
 
-### 2. Tensor Module (Suizhi Ma, Jixiao Zhang)
+#### 2. Tensor Module (Suizhi Ma, Jixiao Zhang)
+
 - **Goals**: Develop the `Tensor` type, adding gradients, autograd capabilities, and integration with `Ndarray`.
 - **Steps**:
   - Define the `Tensor` type, integrating an `Ndarray` for data and another for gradient.
   - Implement core functions: addition, subtraction, multiplication, and division (both element-wise and scalar) with automatic differentiation.
   - Implement statistical operations: mean, variance, standard deviation, min, and max with automatic differentiation.
 
----
 
-## Phase 2: Model & Data Modules (11/27 - 12/4)
+### Phase 2: Model & Data Modules (11/27 - 12/4)
 
-### 3. Model Module (Suizhi Ma, Jixiao Zhang)
+#### 3. Model Module (Suizhi Ma, Jixiao Zhang)
+
 - **Goals**: Design and implement the core model interface, supporting common layers and building blocks.
 - **Steps**:
   - Define `Model` type with essential functions: `forward` and `parameters`.
   - Implement `Linear` and `Conv2D` layers as basic models.
   - Add `sequential` models to enable stacking of layers, and set up utilities for parameter initialization.
 
-### 4. Optimizer, Dataset, DataLoader, and Transform Modules (Chuan Chen, Rui Wang)
+#### 4. Optimizer, Dataset, DataLoader, and Transform Modules (Chuan Chen, Rui Wang)
+
 - **Goals**: Implement support for model training, data handling, and transformation.
 - **Steps**:
   - **Optimizer**: Implement standard optimizers (`SGD`, `Adam`), connecting to `Model` parameters.
@@ -533,18 +559,19 @@ done
   - **DataLoader**: Add `DataLoader` for batch management and dataset shuffling.
   - **Transform**: Implement common transforms (normalization, standardization, data augmentation) for data preprocessing.
 
----
 
-## Phase 3: Testing, Debugging, and Training (12/5 - 12/18)
+### Phase 3: Testing, Debugging, and Training (12/5 - 12/18)
 
-### 5. Testing and Debugging (All Team Members)
+#### 5. Testing and Debugging (All Team Members)
+
 - **Goals**: Ensure all modules function correctly and integrate seamlessly; fix bugs and optimize code.
 - **Steps**:
   - Write unit tests for each module (`Ndarray`, `Tensor`, `Model`, etc.), ensuring each function behaves as expected.
   - Integrate module testing with OCaml testing libraries.
   - Debug autograd in `Tensor`, optimizer steps, and DataLoader batching.
 
-### 6. Model Training and Experiments
+#### 6. Model Training and Experiments
+
 - **Goals**: Run initial experiments on MNIST and other datasets to verify model and optimizer implementations.
 - **Steps**:
   - Implement a convolutional neural network (CNN) for MNIST classification.
