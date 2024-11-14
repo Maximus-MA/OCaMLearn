@@ -213,7 +213,7 @@ The `DataLoader` module provides the following core functionalities:
 - **`get_batch`**: Retrieves a specific batch of data samples and labels by batch index, enabling controlled access to data during model training.
 - **`get_total_batches`**: Returns the total number of batches available, facilitating iteration planning and tracking within training loops.
 
-#### `Transform` Module
+##### `Transform` Module
 
 The `Transform` module provides a set of operations designed to preprocess and augment tensors. These transformations are crucial in preparing data to match the model's requirements and for introducing variations that improve model generalization. They can be applied dynamically during data loading or preprocessing stages.
 
