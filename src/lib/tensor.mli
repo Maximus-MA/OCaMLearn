@@ -3,18 +3,15 @@ type ndarray = Ndarray.t
 
 type t = {
   data: ndarray;                    (* The tensor's data as an ndarray *)
-  grad: ndarray option;             (* Gradient of the tensor, if required *)
+  grad: ndarray ref;             (* Gradient of the tensor, if required *)
   requires_grad: bool;              (* Indicates if the tensor requires gradient computation *)
-  backward_fn: (unit -> unit) option;  (* Function to compute gradients for backpropagation *)
+  mutable backward_fn: (unit -> unit) option;  (* Function to compute gradients for backpropagation *)
   prev: t list;                     (* List of previous tensors for backpropagation *)
 }
 
 (* Creation functions *)
 val create : data:float array -> shape:int array -> requires_grad:bool -> t
 (** [create data shape requires_grad] creates a new tensor with specified [data], [shape], and [requires_grad] to indicate gradient requirement. *)
-
-val from_tensor : t -> t
-(** [from_tensor tensor] creates a copy of [tensor], inheriting its shape and gradient properties. *)
 
 val zeros : int array -> t
 (** [zeros shape] creates a tensor filled with zeros, of specified [shape]. *)
@@ -35,7 +32,7 @@ val he_init : int array -> t
 val ndim : t -> int
 (** [ndim tensor] returns the number of dimensions of [tensor]. *)
 
-val get_data : t -> float array
+val get_data : t -> ndarray
 (** [get_data t] retrieves the raw data array of tensor [t]. *)
 
 val shape : t -> int array
@@ -51,22 +48,16 @@ val set : t -> int array -> float -> unit
 (** [set t idx value] sets the value at index [idx] in tensor [t] to [value]. *)
 
 (* Gradient-related functions *)
-val backward : t -> unit
-(** [backward t] performs backpropagation on tensor [t] to compute gradients. *)
-
 val zero_grad : t -> unit
 (** [zero_grad t] resets the gradient of tensor [t] to zero. *)
 
-val reset_grad : t -> unit
-(** [reset_grad t] clears the gradient of tensor [t] but retains backpropagation history. *)
-
-val accumulate_grad : t -> t -> unit
+val accumulate_grad : t -> ndarray -> unit
 (** [accumulate_grad t grad] adds the given gradient tensor [grad] to the existing gradient of [t]. *)
 
-val get_grad : t -> float array option
+val get_grad : t ->  ndarray ref
 (** [get_grad t] retrieves the gradient of tensor [t] as an option type, if it exists. *)
 
-val set_grad : t -> float array -> unit
+val set_grad : t ->  ndarray -> unit
 (** [set_grad t grad] directly sets the gradient of tensor [t] to the given gradient array [grad]. *)
 
 val clip_grad : t -> float -> unit
@@ -76,26 +67,14 @@ val clip_grad : t -> float -> unit
 val add : t -> t -> t
 (** [add t1 t2] performs element-wise addition between tensors [t1] and [t2], supporting broadcasting. *)
 
-val add_scalar : t -> float -> t
-(** [add_scalar t x] adds scalar [x] to each element of tensor [t]. *)
-
 val sub : t -> t -> t
 (** [sub t1 t2] performs element-wise subtraction between tensors [t1] and [t2]. *)
-
-val sub_scalar : t -> float -> t
-(** [sub_scalar t x] subtracts scalar [x] from each element of tensor [t]. *)
 
 val mul : t -> t -> t
 (** [mul t1 t2] performs element-wise multiplication between tensors [t1] and [t2]. *)
 
-val mul_scalar : t -> float -> t
-(** [mul_scalar t x] multiplies each element in tensor [t] by scalar [x]. *)
-
 val div : t -> t -> t
 (** [div t1 t2] performs element-wise division of tensor [t1] by tensor [t2]. *)
-
-val div_scalar : t -> float -> t
-(** [div_scalar t x] divides each element in tensor [t] by scalar [x]. *)
 
 (* Matrix operations *)
 val matmul : t -> t -> t

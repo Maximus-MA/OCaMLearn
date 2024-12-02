@@ -19,6 +19,7 @@ let is_broadcastable shape1 shape2 = not_implemented "is_broadcastable"
 
 let broadcast_shape shape1 shape2 = not_implemented "broadcast_shape"
 
+
 let add a b = not_implemented "add"
 
 let sub a b = not_implemented "sub"
@@ -106,3 +107,19 @@ let pow arr x = not_implemented "pow"
 let expand_dims arr dim = not_implemented "expand_dims"
 
 let squeeze arr = not_implemented "squeeze"
+
+let map (arr: t) ~f :t= 
+  {data= Array.map f arr.data; shape= arr.shape}
+
+(* Reduction functions *)
+let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
+  let arr_shape = arr.shape in
+  if Array.length arr_shape <> Array.length target_shape then
+    failwith "Shapes must have the same number of dimensions for reduce_sum_to_shape";
+  let axes_to_reduce = List.filter_map (fun (i, (dim_arr, dim_target)) ->
+    if dim_arr <> dim_target then Some i else None
+  ) (List.mapi (fun i dims -> (i, dims)) (Array.to_list (Array.combine arr_shape target_shape))) in
+  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce
+
+  let negate arr =
+    { data = Array.map (fun x -> -.x) arr.data; shape = arr.shape }

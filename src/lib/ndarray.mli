@@ -158,3 +158,10 @@ val expand_dims : t -> int -> t
 
 val squeeze : t -> t
 (** [squeeze arr] removes dimensions of size 1 from [arr]. *)
+
+
+val map : t-> ('a->'b) ->t
+
+val reduce_sum_to_shape : t -> int array -> t
+
+val negate: t->t
