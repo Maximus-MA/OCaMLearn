@@ -4,8 +4,8 @@
 type ndarray = Ndarray.t
 
 type t = {
-  data: ndarray;                    (* The tensor's data as an ndarray *)
-  grad: ndarray ref;             (* Gradient of the tensor, if required *)
+  mutable data: ndarray;                    (* The tensor's data as an ndarray *)
+  mutable grad: ndarray;             (* Gradient of the tensor, if required *)
   requires_grad: bool;              (* Indicates if the tensor requires gradient computation *)
   mutable backward_fn: (unit -> unit) option;  (* Function to compute gradients for backpropagation *)
   prev: t list;                     (* List of previous tensors for backpropagation *)
@@ -20,7 +20,7 @@ let create ~data ~shape ~requires_grad =
   let data_ndarray = Ndarray.create data shape in
   {
     data = data_ndarray;
-    grad = ref (Ndarray.zeros shape);
+    grad = (Ndarray.zeros shape);
     requires_grad;
     backward_fn = None;
     prev = [];
@@ -30,7 +30,7 @@ let zeros shape =
   let data = Ndarray.zeros shape in
   {
     data;
-    grad = ref (Ndarray.zeros shape);
+    grad = (Ndarray.zeros shape);
     requires_grad = true;
     backward_fn = None;
     prev = [];
@@ -39,7 +39,7 @@ let ones shape =
   let data = Ndarray.ones shape in
   {
     data;
-    grad = ref (Ndarray.zeros shape);
+    grad = (Ndarray.zeros shape);
     requires_grad = true;
     backward_fn = None;
     prev = [];
@@ -49,7 +49,7 @@ let rand shape =
   let data = Ndarray.rand shape in
   {
     data;
-    grad = ref (Ndarray.zeros shape);
+    grad = (Ndarray.zeros shape);
     requires_grad = true;
     backward_fn = None;
     prev = [];
@@ -59,7 +59,7 @@ let xavier_init shape =
   let data = Ndarray.xavier_init shape in
   {
     data;
-    grad = ref (Ndarray.zeros shape);
+    grad = (Ndarray.zeros shape);
     requires_grad = true;
     backward_fn = None;
     prev = [];
@@ -69,7 +69,7 @@ let he_init shape =
   let data = Ndarray.kaiming_init shape in  (* Assuming kaiming_init is equivalent to he_init *)
   {
     data;
-    grad = ref (Ndarray.zeros shape);
+    grad = (Ndarray.zeros shape);
     requires_grad = true;
     backward_fn = None;
     prev = [];
@@ -97,15 +97,15 @@ let set t idx value =
 
 (* Gradient-related functions *)
 let accumulate_grad t grad =
-    t.grad := Ndarray.add !(t.grad) grad
+    t.grad <- Ndarray.add t.grad grad
 let zero_grad t =
-  t.grad := Ndarray.zeros @@ shape t
+  t.grad = Ndarray.zeros @@ shape t
 
 let get_grad t =
   t.grad
 
 let set_grad t grad =
-  t.grad := grad
+  t.grad <- grad
 
 (* let clip_grad t max_val =
   let clipped_grad = Ndarray.map ~f:(fun x -> max (-.max_val) (min x max_val)) !t.grad in 
@@ -120,36 +120,37 @@ let add t1 t2 =
   let requires_grad = t1.requires_grad || t2.requires_grad in
   let t = {
     data;
-    grad = ref (Ndarray.zeros (Ndarray.shape data));
+    grad = (Ndarray.zeros (Ndarray.shape data));
     requires_grad;
     backward_fn = None;  (* Will set later *)
     prev = [t1; t2];
   } in
   if requires_grad then
     t.backward_fn <- Some (fun () ->
-      let grad_output = !(t.grad) in
+      let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t1.data) in
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t2.data) in
         accumulate_grad t2 grad_t2;
-    );
+		);
   t
+
 
 let sub t1 t2 =
   let data = Ndarray.sub t1.data t2.data in
   let requires_grad = t1.requires_grad || t2.requires_grad in
   let t = {
     data;
-    grad = ref (Ndarray.zeros (Ndarray.shape data));
+    grad =(Ndarray.zeros (Ndarray.shape data));
     requires_grad;
     backward_fn = None;
     prev = [t1; t2];
   } in
   if requires_grad then
     t.backward_fn <- Some (fun () ->
-      let grad_output = !(t.grad) in
+      let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t1.data) in
         accumulate_grad t1 grad_t1;
