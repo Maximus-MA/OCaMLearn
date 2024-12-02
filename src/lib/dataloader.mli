@@ -29,7 +29,7 @@ type t = {
    Returns:
    - A data loader configured with the specified parameters.
  *)
-val create : dataset -> batch_size:int -> shuffle:bool -> ?transorms: transform list -> t
+val create : dataset:dataset -> batch_size:int -> shuffle:bool -> ?transorms:transform list -> t
 
 (* 
    Retrieves a batch from the data loader.
@@ -43,7 +43,7 @@ val create : dataset -> batch_size:int -> shuffle:bool -> ?transorms: transform 
      - The data tensor for the batch.
      - The label tensor for the batch.
  *)
-val get_batch : t -> int -> tensor * tensor
+val get_batch : t -> int -> tensor_dataset
 
 (* 
    Gets the total number of batches in the data loader.

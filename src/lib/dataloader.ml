@@ -24,11 +24,27 @@ type t = {
 let not_implemented feature_name =
   failwith (feature_name ^ " is not yet implemented")
 
-let create dataset ~batch_size ~shuffle ?transorms =
-  not_implemented "create"
+let create dataset ~batch_size ~shuffle ?(transforms = []) =
+  let apply_transforms ndarray transforms =
+    List.fold_left (fun acc transform -> transform acc) ndarray transforms
+  in
+  if shuffle then 
+    let shuffled_dataset = Dataset.shuffle dataset in
+    let tensor_dataset = 
+      { data = Tensor.to_tensor (apply_transforms shuffled_dataset.data transforms); 
+      label = Tensor.to_tensor shuffled_dataset.label }
+    in let num_samples = shuffled_dataset.data.shape.(0) in 
+    { dataset = tensor_dataset; batch_size = batch_size; total_batches = (num_samples + batch_size - 1) / batch_size }
+  else
+    let tensor_dataset = 
+    { data = Tensor.to_tensor (apply_transforms dataset.data transforms); 
+    label = Tensor.to_tensor dataset.label }
+    in let num_samples = dataset.data.shape.(0) in  
+    { dataset = tensor_dataset; batch_size = batch_size; total_batches = (num_samples + batch_size - 1) / batch_size }
 
 let get_batch loader idx =
-  not_implemented "get_batch"
+  {data = Tensor.slice (loader.dataset.data) (idx*loader.batch_size) (idx*loader.batch_size+loader.batch_size);
+  label = Tensor.slice (loader.dataset.label) (idx*loader.batch_size) (idx*loader.batch_size+loader.batch_size)}
 
 let get_total_batches loader =
-  not_implemented "get_total_batches"
+  loader.total_batches

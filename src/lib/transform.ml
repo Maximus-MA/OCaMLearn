@@ -2,10 +2,9 @@
 
 [@@@ocaml.warning "-27"]
 
-type tensor = Tensor.t
-
-type t = tensor -> tensor
-(** The type for transformations *)
+type ndarray = Ndarray.t
+(* Represents a transformation applied to a ndarray. *)
+type t = ndarray -> ndarray
 
 (* Placeholder for unimplemented functions *)
 let not_implemented feature_name =
