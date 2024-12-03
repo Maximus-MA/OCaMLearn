@@ -7,7 +7,7 @@ type tensor = Tensor.t
 type t = {
   parameters: tensor list;                (* List of tensors representing the layer's parameters *)
   forward_fn: tensor list -> tensor; (* Forward function for layer computation *)
-}
+} [@@deriving show]
 
 (* Placeholder for unimplemented functions *)
 let not_implemented feature_name =

@@ -181,6 +181,10 @@ val detach : t -> t
 val relu : t -> t
 (** [relu t] applies the Rectified Linear Unit function element-wise to tensor [t]. *)
 
+val slice : t -> (int * int) list -> t
+
+val to_string : t -> string
+(** [to_string t] returns a string representation of tensor [t]. *)
 val softmax : t -> t 
 
 val log_softmax : t -> t 

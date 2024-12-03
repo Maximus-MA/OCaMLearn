@@ -167,3 +167,5 @@ val reduce_sum_to_shape : t -> int array -> t
 val negate: t->t
 
 val relu: t->t
+
+val to_string: t->string
