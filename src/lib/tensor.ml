@@ -26,6 +26,15 @@ let create ~data ~requires_grad ~prev =
     backward_fn = None;  (* Will set later *)
     prev;
   }
+
+let from_ndarray ?(requires_grad=true) data  =
+  {
+    data;
+    grad = (Ndarray.zeros (Ndarray.shape data));
+    requires_grad = requires_grad;
+    backward_fn = None;
+    prev = [];
+  }
   
 
 let zeros shape =

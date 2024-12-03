@@ -19,7 +19,7 @@ let is_broadcastable shape1 shape2 = not_implemented "is_broadcastable"
 
 let broadcast_shape shape1 shape2 = not_implemented "broadcast_shape"
 
-
+(* #TODO *)
 let add a b = not_implemented "add"
 
 let sub a b = not_implemented "sub"
@@ -28,6 +28,7 @@ let mul a b = not_implemented "mul"
 
 let div a b = not_implemented "div"
 
+(* #TODO *)
 let matmul a b = not_implemented "matmul"
 
 let create data shape = not_implemented "create"
@@ -40,6 +41,7 @@ let zeros shape = not_implemented "zeros"
 
 let ones shape = not_implemented "ones"
 
+(* #TODO *)
 let rand shape = not_implemented "rand"
 
 let xavier_init shape = not_implemented "xavier_init"

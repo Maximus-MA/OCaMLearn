@@ -31,14 +31,14 @@ let create dataset ~batch_size ~shuffle ?(transforms = []) =
   if shuffle then 
     let shuffled_dataset = Dataset.shuffle dataset in
     let tensor_dataset = 
-      { data = Tensor.to_tensor (apply_transforms shuffled_dataset.data transforms); 
-      label = Tensor.to_tensor shuffled_dataset.label }
+      { data = Tensor.from_ndarray (apply_transforms shuffled_dataset.data transforms); 
+      label = Tensor.from_ndarray shuffled_dataset.label }
     in let num_samples = shuffled_dataset.data.shape.(0) in 
     { dataset = tensor_dataset; batch_size = batch_size; total_batches = (num_samples + batch_size - 1) / batch_size }
   else
     let tensor_dataset = 
-    { data = Tensor.to_tensor (apply_transforms dataset.data transforms); 
-    label = Tensor.to_tensor dataset.label }
+    { data = Tensor.from_ndarray (apply_transforms dataset.data transforms); 
+    label = Tensor.from_ndarray dataset.label }
     in let num_samples = dataset.data.shape.(0) in  
     { dataset = tensor_dataset; batch_size = batch_size; total_batches = (num_samples + batch_size - 1) / batch_size }
 
