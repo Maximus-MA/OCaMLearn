@@ -180,3 +180,5 @@ val detach : t -> t
 (* need to add more *)
 val relu : t -> t
 (** [relu t] applies the Rectified Linear Unit function element-wise to tensor [t]. *)
+
+val slice : t -> (int * int) list -> t
