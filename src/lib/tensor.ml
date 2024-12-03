@@ -6,11 +6,11 @@ open Core
 type ndarray = Ndarray.t
 
 type t = {
-  mutable data: ndarray;                    (* The tensor's data as an ndarray *)
-  mutable grad: ndarray;             (* Gradient of the tensor, if required *)
-  requires_grad: bool;              (* Indicates if the tensor requires gradient computation *)
-  mutable backward_fn: (unit -> unit) option;  (* Function to compute gradients for backpropagation *)
-  prev: t list;                     (* List of previous tensors for backpropagation *)
+  mutable data: ndarray;
+  mutable grad: ndarray;
+  requires_grad: bool;
+  mutable backward_fn: (unit -> unit) option;
+  prev: t list;
 }
 
 (* Placeholder for unimplemented functions *)
@@ -357,3 +357,6 @@ let slice t ranges  =
   mutable backward_fn: (unit -> unit) option;  (* Function to compute gradients for backpropagation *)
   prev: t list;                     (* List of previous tensors for backpropagation *)
 } *)
+
+let to_string t =
+  Printf.sprintf "Tensor {data = %s, requires_grad = %b}" (Ndarray.to_string t.data) t.requires_grad
