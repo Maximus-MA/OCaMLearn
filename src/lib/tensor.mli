@@ -180,3 +180,9 @@ val detach : t -> t
 (* need to add more *)
 val relu : t -> t
 (** [relu t] applies the Rectified Linear Unit function element-wise to tensor [t]. *)
+
+val softmax : t -> t 
+
+val log_softmax : t -> t 
+
+val neg : t -> t

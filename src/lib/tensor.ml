@@ -327,6 +327,25 @@ let can_broadcast t1 t2 =
 let detach t =
   not_implemented "detach"
 
+let neg t =
+  let data = Ndarray.negate t.data in
+  let requires_grad = t.requires_grad in
+  let t_new = {
+    data;
+    grad = Ndarray.zeros (Ndarray.shape data);
+    requires_grad;
+    backward_fn = None;
+    prev = [t];
+  } in
+  if requires_grad then
+    t_new.backward_fn <- Some (fun () ->
+      let grad_output = t_new.grad in
+      let grad_input = Ndarray.negate grad_output in
+      accumulate_grad t grad_input;
+    );
+  t_new
+  
+
 let relu t =
   let data = Ndarray.relu t.data in
   let requires_grad = t.requires_grad in
@@ -337,6 +356,60 @@ let relu t =
     let grad_input = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) grad_output in
     accumulate_grad t grad_input);
   res
+
+  let softmax t =
+    let max_vals = Ndarray.dmax t.data (Ndarray.dim t.data - 1) in
+    let shifted_logits = Ndarray.sub t.data  max_vals in
+    let exp_logits = Ndarray.exp shifted_logits in
+    let sum_exp = Ndarray.dsum exp_logits (Ndarray.dim t.data - 1) in
+    let probs = Ndarray.div exp_logits sum_exp in
+  
+    let requires_grad = t.requires_grad in
+    let t_new = {
+      data = probs;
+      grad = Ndarray.zeros (Ndarray.shape probs);
+      requires_grad;
+      backward_fn = None;
+      prev = [t];
+    } in
+  
+    if requires_grad then
+      t_new.backward_fn <- Some (fun () ->
+        let grad_output = t_new.grad in
+        (* 
+           dSoftmax = Softmax * (grad_output - sum(grad_output * Softmax))
+        *)
+        let sum_grad = Ndarray.dsum (Ndarray.mul grad_output t_new.data) (Ndarray.dim t.data - 1) in
+        let grad_input = Ndarray.mul t_new.data (Ndarray.sub grad_output sum_grad) in
+        accumulate_grad t grad_input;
+      );
+    t_new
+  
+  let log_softmax t =
+    let max_vals = Ndarray.dmax t.data (Ndarray.dim t.data - 1) in
+    let shifted_logits = Ndarray.sub t.data max_vals in
+    let sum_exp = Ndarray.dsum (Ndarray.exp shifted_logits) (Ndarray.dim t.data - 1) in
+    let log_probs = Ndarray.sub shifted_logits (Ndarray.log sum_exp) in
+
+    let requires_grad = t.requires_grad in
+    let t_new = {
+      data = log_probs;
+      grad = Ndarray.zeros (Ndarray.shape log_probs);
+      requires_grad;
+      backward_fn = None;
+      prev = [t];
+    } in
+
+    if requires_grad then
+      t_new.backward_fn <- Some (fun () ->
+        let grad_output = t_new.grad in
+        (* Gradient of log_softmax is grad_output - exp(log_probs) * sum(grad_output) *)
+        let softmax_probs = Ndarray.exp t_new.data in
+        let sum_grad = Ndarray.dsum (Ndarray.mul grad_output softmax_probs) (Ndarray.dim t.data - 1) in
+        let grad_input = Ndarray.sub grad_output (Ndarray.mul softmax_probs sum_grad) in
+        accumulate_grad t grad_input;
+      );
+    t_new
 
 
 (* 
