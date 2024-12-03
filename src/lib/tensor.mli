@@ -184,10 +184,10 @@ val relu : t -> t
 val slice : t -> (int * int) list -> t
 
 val to_string : t -> string
-(** [to_string t] returns a string representation of tensor [t]. *)
+
 val softmax : t -> t 
 
 val log_softmax : t -> t 
 
 val neg : t -> t
-val slice : t -> (int * int) list -> t
+
