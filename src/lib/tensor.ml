@@ -171,11 +171,46 @@ let div t1 t2 =
 
 (* Matrix operations *)
 let matmul t1 t2 =
-  not_implemented "matmul"
-  (* TODO *)
+  let data = Ndarray.matmul t1.data t2.data in
+  let requires_grad = t1.requires_grad || t2.requires_grad in
+  let t = {
+    data;
+    grad = (Ndarray.zeros (Ndarray.shape data));
+    requires_grad;
+    backward_fn = None;
+    prev = [t1; t2];
+  } in
+  if requires_grad then
+    t.backward_fn <- Some (fun () ->
+      let grad_output = t.grad in
+      if t1.requires_grad then
+        let grad_t1 = (Ndarray.matmul grad_output (Ndarray.transpose t2.data)
+                      |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
+        accumulate_grad t1 grad_t1;
+      if t2.requires_grad then
+        let grad_t2 = (Ndarray.matmul (Ndarray.transpose t1.data) grad_output
+                      |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
+        accumulate_grad t2 grad_t2;
+    );
+  t
 
-let transpose t =
-  not_implemented "transpose"
+  let transpose t =
+    let data = Ndarray.transpose t.data in
+    let requires_grad = t.requires_grad in
+    let t_new = {
+      data;
+      grad = (Ndarray.zeros (Ndarray.shape data));
+      requires_grad;
+      backward_fn = None;
+      prev = [t];
+    } in
+    if requires_grad then
+      t_new.backward_fn <- Some (fun () ->
+        let grad_output = t_new.grad in
+        let grad_t = Ndarray.transpose grad_output in
+        accumulate_grad t grad_t;
+      );
+    t_new
 
 (* Tensor shape operations *)
 let reshape t ~shape =
