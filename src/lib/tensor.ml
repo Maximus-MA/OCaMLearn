@@ -223,7 +223,17 @@ let matmul t1 t2 =
 
 (* Tensor shape operations *)
 let reshape t ~shape =
-  not_implemented "reshape"
+  let data = Ndarray.reshape t.data shape in
+  let requires_grad = t.requires_grad in
+  let prev = [t] in
+  let res = create ~data ~requires_grad ~prev in
+  if requires_grad then
+    res.backward_fn <- Some (fun () ->
+      let grad_output = res.grad in
+      let grad_t = Ndarray.reshape grad_output (Ndarray.shape t.data) in
+      accumulate_grad t grad_t;
+    );
+  res
 
 let expand t new_shape =
   not_implemented "expand"

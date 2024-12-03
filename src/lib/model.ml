@@ -35,7 +35,13 @@ let create_Conv2d ~in_channels ~out_channels ~kernel_size ~stride ~padding =
   not_implemented "create_Conv2d"
 
 let create_Flatten () =
-  not_implemented "create_Flatten"
+  let parameters = [] in
+  let forward_fn inputs =
+    let x = List.hd_exn inputs in
+    let batch = Array.get (Tensor.shape x) 0 in
+    Tensor.reshape x ~shape:[|batch; -1|] in
+  create ~parameters ~forward_fn
+
 
 let create_Sequential layers =
   let parameters = List.concat (List.map ~f:get_parameters layers) in
