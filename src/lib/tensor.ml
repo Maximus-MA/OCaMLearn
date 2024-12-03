@@ -411,6 +411,16 @@ let relu t =
       );
     t_new
 
+let slice t ranges  =
+  let data = Ndarray.slice t.data ranges in
+  let requires_grad = t.requires_grad in
+  let prev = [t] in
+  let res = create ~data ~requires_grad ~prev in
+  res.backward_fn <- Some (fun () ->
+    let grad_output = res.grad in
+    let grad_input = Ndarray.slice grad_output ranges in
+    accumulate_grad t grad_input);
+  res
 
 (* 
   type t = {

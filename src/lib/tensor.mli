@@ -186,3 +186,4 @@ val softmax : t -> t
 val log_softmax : t -> t 
 
 val neg : t -> t
+val slice : t -> (int * int) list -> t
