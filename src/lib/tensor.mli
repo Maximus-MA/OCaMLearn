@@ -13,6 +13,9 @@ type t = {
 val create : data:ndarray -> requires_grad:bool -> prev:t list -> t
 (** [create ~data ~requires_grad ~prev] creates a tensor with the specified [data], [requires_grad] flag, and [prev] tensors. *)
 
+val from_ndarray : ?requires_grad:bool -> ndarray -> t
+(** [from_ndarray ?requires_grad data] creates a tensor from the given [data] array, with an optional [requires_grad] flag. *)
+
 val zeros : int array -> t
 (** [zeros shape] creates a tensor filled with zeros, of specified [shape]. *)
 
