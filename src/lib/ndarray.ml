@@ -108,6 +108,7 @@ let expand_dims arr dim = not_implemented "expand_dims"
 
 let squeeze arr = not_implemented "squeeze"
 
+(* #TODO *)
 let map (arr: t) ~f :t= 
   {data= Array.map f arr.data; shape= arr.shape}
 
@@ -123,3 +124,8 @@ let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
 
   let negate arr =
     { data = Array.map (fun x -> -.x) arr.data; shape = arr.shape }
+
+
+(* #TODO *)
+let relu arr =
+  not_implemented "relu"

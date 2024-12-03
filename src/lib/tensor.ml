@@ -1,6 +1,8 @@
 (* src/tensor.ml *)
 [@@@ocaml.warning "-27"]
 
+open Core
+
 type ndarray = Ndarray.t
 
 type t = {
@@ -16,15 +18,15 @@ let not_implemented feature_name =
   failwith (feature_name ^ " is not yet implemented")
 
 (* Creation functions *)
-let create ~data ~shape ~requires_grad =
-  let data_ndarray = Ndarray.create data shape in
+let create ~data ~requires_grad ~prev =
   {
-    data = data_ndarray;
-    grad = (Ndarray.zeros shape);
+    data;
+    grad = (Ndarray.zeros (Ndarray.shape data));
     requires_grad;
-    backward_fn = None;
-    prev = [];
+    backward_fn = None;  (* Will set later *)
+    prev;
   }
+  
 
 let zeros shape =
   let data = Ndarray.zeros shape in
@@ -99,7 +101,7 @@ let set t idx value =
 let accumulate_grad t grad =
     t.grad <- Ndarray.add t.grad grad
 let zero_grad t =
-  t.grad = Ndarray.zeros @@ shape t
+  t.grad <- Ndarray.zeros @@ shape t
 
 let get_grad t =
   t.grad
@@ -270,3 +272,24 @@ let can_broadcast t1 t2 =
 
 let detach t =
   not_implemented "detach"
+
+let relu t =
+  let data = Ndarray.relu t.data in
+  let requires_grad = t.requires_grad in
+  let prev = [t] in
+  let res = create ~data ~requires_grad ~prev in
+  res.backward_fn <- Some (fun () ->
+    let grad_output = res.grad in
+    let grad_input = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) grad_output in
+    accumulate_grad t grad_input);
+  res
+
+
+(* 
+  type t = {
+  mutable data: ndarray;                    (* The tensor's data as an ndarray *)
+  mutable grad: ndarray;             (* Gradient of the tensor, if required *)
+  requires_grad: bool;              (* Indicates if the tensor requires gradient computation *)
+  mutable backward_fn: (unit -> unit) option;  (* Function to compute gradients for backpropagation *)
+  prev: t list;                     (* List of previous tensors for backpropagation *)
+} *)

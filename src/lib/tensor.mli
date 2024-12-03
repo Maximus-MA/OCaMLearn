@@ -2,16 +2,16 @@
 type ndarray = Ndarray.t
 
 type t = {
-  data: ndarray;                    (* The tensor's data as an ndarray *)
-  grad: ndarray ref;             (* Gradient of the tensor, if required *)
+  mutable data: ndarray;                    (* The tensor's data as an ndarray *)
+  mutable grad: ndarray;             (* Gradient of the tensor, if required *)
   requires_grad: bool;              (* Indicates if the tensor requires gradient computation *)
   mutable backward_fn: (unit -> unit) option;  (* Function to compute gradients for backpropagation *)
   prev: t list;                     (* List of previous tensors for backpropagation *)
 }
 
 (* Creation functions *)
-val create : data:float array -> shape:int array -> requires_grad:bool -> t
-(** [create data shape requires_grad] creates a new tensor with specified [data], [shape], and [requires_grad] to indicate gradient requirement. *)
+val create : data:ndarray -> requires_grad:bool -> prev:t list -> t
+(** [create ~data ~requires_grad ~prev] creates a tensor with the specified [data], [requires_grad] flag, and [prev] tensors. *)
 
 val zeros : int array -> t
 (** [zeros shape] creates a tensor filled with zeros, of specified [shape]. *)
@@ -54,7 +54,7 @@ val zero_grad : t -> unit
 val accumulate_grad : t -> ndarray -> unit
 (** [accumulate_grad t grad] adds the given gradient tensor [grad] to the existing gradient of [t]. *)
 
-val get_grad : t ->  ndarray ref
+val get_grad : t ->  ndarray
 (** [get_grad t] retrieves the gradient of tensor [t] as an option type, if it exists. *)
 
 val set_grad : t ->  ndarray -> unit
@@ -173,3 +173,7 @@ val can_broadcast : t -> t -> bool
 
 val detach : t -> t
 (** [detach t] returns a copy of tensor [t] without gradient tracking. *)
+
+(* need to add more *)
+val relu : t -> t
+(** [relu t] applies the Rectified Linear Unit function element-wise to tensor [t]. *)
