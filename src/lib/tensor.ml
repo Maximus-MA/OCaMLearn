@@ -172,11 +172,52 @@ let sub t1 t2 =
   t
 
 let mul t1 t2 =
-  not_implemented "mul"
+  let data = Ndarray.mul t1.data t2.data in
+  let requires_grad = t1.requires_grad || t2.requires_grad in
+  let t = {
+    data;
+    grad = Ndarray.zeros (Ndarray.shape data);
+    requires_grad;
+    backward_fn = None;
+    prev = [t1; t2];
+  } in
+  if requires_grad then
+    t.backward_fn <- Some (fun () ->
+      let grad_output = t.grad in
+      if t1.requires_grad then
+        let grad_t1 = (Ndarray.mul grad_output t2.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
+        accumulate_grad t1 grad_t1;
+      if t2.requires_grad then
+        let grad_t2 = (Ndarray.mul grad_output t1.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
+        accumulate_grad t2 grad_t2;
+    );
+  t
+  
 
-
-let div t1 t2 =
-  not_implemented "div"
+  let div t1 t2 =
+    let data = Ndarray.div t1.data t2.data in
+    let requires_grad = t1.requires_grad || t2.requires_grad in
+    let t = {
+      data;
+      grad = Ndarray.zeros (Ndarray.shape data);
+      requires_grad;
+      backward_fn = None;
+      prev = [t1; t2];
+    } in
+    if requires_grad then
+      t.backward_fn <- Some (fun () ->
+        let grad_output = t.grad in
+        if t1.requires_grad then
+          let grad_t1 = (Ndarray.div grad_output t2.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
+          accumulate_grad t1 grad_t1;
+        if t2.requires_grad then
+          let numerator = Ndarray.mul grad_output t1.data in
+          let denominator = Ndarray.mul t2.data t2.data in
+          let grad_t2 = (Ndarray.div numerator denominator |> Ndarray.negate |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
+          accumulate_grad t2 grad_t2;
+      );
+    t
+  
 
 (* Matrix operations *)
 let matmul t1 t2 =
