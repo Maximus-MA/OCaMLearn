@@ -100,10 +100,10 @@ val split : t -> int -> t list
 (** [split t dim] splits tensor [t] along the specified dimension [dim] into a list of sub-tensors. *)
 
 (* Mathematical functions *)
-val sum : t -> t
+val sum : ?dim:int -> t -> t
 (** [sum t] calculates the sum of all elements in tensor [t]. *)
 
-val mean : t -> t
+val mean : ?dim:int -> t -> t
 (** [mean t] calculates the mean of all elements in tensor [t]. *)
 
 val variance : t -> t

@@ -631,6 +631,7 @@ let dsum t dim =
 let dmean t dim =
   let shape = t.shape in
   let ndim = Array.length shape in
+  print_shape t.shape;
   if dim < 0 || dim >= ndim then failwith "Dimension out of range";
   let new_shape = Array.init (ndim - 1) (fun i -> if i < dim then shape.(i) else shape.(i + 1)) in
   let num_new_elements = Array.fold_left ( * ) 1 new_shape in

@@ -286,12 +286,60 @@ let split t dim =
   not_implemented "split"
 
 (* Mathematical functions *)
-let sum t =
-  not_implemented "sum"
-  (* TODO *)
+let sum ?dim t =
+  let data = match dim with
+    | Some d -> Ndarray.dsum t.data d
+    | None -> not_implemented "sum"
+  in
+  let requires_grad = t.requires_grad in
+  let t_new = {
+    data;
+    grad = Ndarray.zeros data.shape;
+    requires_grad;
+    backward_fn = None;
+    prev = [t];
+  } in
+  if requires_grad then
+    t_new.backward_fn <- Some (fun () ->
+      let grad_output = t_new.grad in
+      let grad_input = match dim with
+        | Some d -> Ndarray.expand_dims grad_output (Ndarray.dim t.data)
+        | None -> not_implemented "sum"
+      in
+      accumulate_grad t grad_input;
+    );
+  t_new
 
-let mean t =
-  not_implemented "mean"
+  let mean ?dim t =
+    let data = match dim with
+      | Some d -> Ndarray.dmean t.data d
+      | None -> not_implemented "mean"
+    in
+    let requires_grad = t.requires_grad in
+    let t_new = {
+      data;
+      grad = Ndarray.zeros data.shape;
+      requires_grad;
+      backward_fn = None;
+      prev = [t];
+    } in
+    if requires_grad then
+      t_new.backward_fn <- Some (fun () ->
+        let grad_output = t_new.grad in
+        let num_elements = match dim with
+          | Some d -> float_of_int (Ndarray.shape t.data).(d)
+          | None -> float_of_int (Ndarray.numel (Ndarray.shape t.data))
+        in
+        let grad_input = match dim with
+          | Some d -> Ndarray.expand_dims grad_output (Ndarray.dim t.data)
+          | None -> not_implemented "mean" 
+        in
+        let grad_single = (Ndarray.create_float num_elements) in
+        let grad_input = Ndarray.div grad_input (Ndarray.expand_dims grad_single 1) in
+        accumulate_grad t grad_input;
+      );
+    t_new
+  
 
 let variance t =
   not_implemented "variance"
@@ -316,7 +364,7 @@ let argmin t =
   not_implemented "argmin"
 
 let dsum t dim =
-  not_implemented "dsum"
+  sum ~dim:dim t
 
 let dmean t dim =
   not_implemented "dmean"
@@ -428,9 +476,9 @@ let relu t =
   
   let log_softmax t =
     let max_vals = Ndarray.dmax t.data (Ndarray.dim t.data - 1) in
-    let shifted_logits = Ndarray.sub t.data max_vals in
+    let shifted_logits = Ndarray.sub t.data (Ndarray.expand_dims max_vals (Ndarray.dim max_vals))in
     let sum_exp = Ndarray.dsum (Ndarray.exp shifted_logits) (Ndarray.dim t.data - 1) in
-    let log_probs = Ndarray.sub shifted_logits (Ndarray.log sum_exp) in
+    let log_probs = Ndarray.sub shifted_logits (Ndarray.log (Ndarray.expand_dims sum_exp (Ndarray.dim sum_exp))) in
 
     let requires_grad = t.requires_grad in
     let t_new = {

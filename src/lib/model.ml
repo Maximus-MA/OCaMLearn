@@ -83,7 +83,7 @@ let create_MSE () =
       let logits = List.nth_exn inputs 0 in
       let targets = List.nth_exn inputs 1 in
       let log_probs = Tensor.log_softmax logits in
-      let loss = Tensor.neg (Tensor.mean (Tensor.dsum (Tensor.mul targets log_probs) (Ndarray.dim logits.data - 1))) in
+      let loss = Tensor.neg (Tensor.mean ~dim:0(Tensor.dsum (Tensor.mul targets log_probs) (Ndarray.dim logits.data - 1))) in
       loss
     in
     create ~parameters:[] ~forward_fn
