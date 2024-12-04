@@ -10,7 +10,7 @@ type t = ndarray -> ndarray
 let not_implemented feature_name =
   failwith (feature_name ^ " is not yet implemented")
 
-let normalize =
+let normalize x =
   not_implemented "normalize"
 
 let resize width height =

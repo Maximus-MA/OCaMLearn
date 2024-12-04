@@ -886,23 +886,27 @@ let relu arr =
   not_implemented "relu"
 
 let to_string arr =
+  let format_row row =
+    Printf.sprintf "[%s]" (String.concat ", " (Array.to_list (Array.map string_of_float row)))
+  in
   let rec format_ndarray data shape level =
     if Array.length shape = 1 then
-      let row = Array.init shape.(0) (fun i -> data.(i)) in
-      Printf.sprintf "[%s]" (String.concat ", " (Array.to_list (Array.map string_of_float row)))
+      format_row (Array.init shape.(0) (fun i -> data.(i)))
     else
       let dim = shape.(0) in
       let sub_shape = Array.sub shape 1 (Array.length shape - 1) in
       let sub_size = Array.fold_left ( * ) 1 sub_shape in
       let sub_arrays = Array.init dim (fun i ->
         let start_idx = i * sub_size in
-        let _ = start_idx + sub_size in
         Array.sub data start_idx sub_size
       ) in
       let indent = String.make (2 * level) ' ' in
       let sub_results = Array.map (fun sub -> format_ndarray sub sub_shape (level + 1)) sub_arrays in
       Printf.sprintf "[\n%s%s\n%s]" indent
         (String.concat (Printf.sprintf ",\n%s" indent) (Array.to_list sub_results))
-        (if level > 0 then String.make (2 * (level - 1)) ' ' else "") in
-  format_ndarray arr.data arr.shape 0
-  
+        (if level > 0 then String.make (2 * (level - 1)) ' ' else "")
+  in
+  if Array.fold_left ( * ) 1 arr.shape <> Array.length arr.data then
+    failwith "Shape and data size mismatch"
+  else
+    format_ndarray arr.data arr.shape 0
