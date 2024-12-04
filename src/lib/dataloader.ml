@@ -2,6 +2,7 @@
 
 [@@@ocaml.warning "-27"]
 
+type ndarray = Ndarray.t
 
 type dataset = Dataset.t
 
@@ -21,11 +22,11 @@ type t = {
 }
 
 (* Placeholder for unimplemented functions *)
-let not_implemented feature_name =
-  failwith (feature_name ^ " is not yet implemented")
+(* let not_implemented feature_name =
+  failwith (feature_name ^ " is not yet implemented") *)
 
-let create dataset ~batch_size ~shuffle ?(transforms = []) =
-  let apply_transforms ndarray transforms =
+let create ?(transforms = []) dataset ~batch_size ~shuffle  =
+  let apply_transforms (ndarray: ndarray) (transforms: transform list) =
     List.fold_left (fun acc transform -> transform acc) ndarray transforms
   in
   if shuffle then 
@@ -43,8 +44,8 @@ let create dataset ~batch_size ~shuffle ?(transforms = []) =
     { dataset = tensor_dataset; batch_size = batch_size; total_batches = (num_samples + batch_size - 1) / batch_size }
 
 let get_batch loader idx =
-  {data = Tensor.slice (loader.dataset.data) (idx*loader.batch_size) (idx*loader.batch_size+loader.batch_size);
-  label = Tensor.slice (loader.dataset.label) (idx*loader.batch_size) (idx*loader.batch_size+loader.batch_size)}
+  {data = Tensor.slice (loader.dataset.data) [idx*loader.batch_size, idx*loader.batch_size+loader.batch_size];
+  label = Tensor.slice (loader.dataset.label) [idx*loader.batch_size, idx*loader.batch_size+loader.batch_size]}
 
 let get_total_batches loader =
   loader.total_batches

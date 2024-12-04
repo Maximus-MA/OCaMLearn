@@ -29,7 +29,7 @@ type t = {
    Returns:
    - A data loader configured with the specified parameters.
  *)
-val create : dataset:dataset -> batch_size:int -> shuffle:bool -> ?transorms:transform list -> t
+val create : ?transforms:transform list -> dataset -> batch_size:int -> shuffle:bool -> t
 
 (* 
    Retrieves a batch from the data loader.
