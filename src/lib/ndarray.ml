@@ -1,13 +1,15 @@
 (* src/ndarray.ml *)
 [@@@ocaml.warning "-27"]
 
+let print_shape shape =
+  Printf.printf "[%s]\n"
+    (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
+;;
+
 type t = {
   data: float array;
   shape: int array;
 }
-
-let not_implemented feature_name =
-  failwith (feature_name ^ " is not yet implemented")
 
 (* 计算元素总数 *)
 let numel shape =
@@ -116,6 +118,8 @@ let add a b =
 
 (* 广播减法 *)
 let sub a b =
+  print_shape a.shape;
+  print_shape b.shape;
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
   let shape = broadcast_shape a.shape b.shape in
@@ -259,6 +263,8 @@ let div a b =
 let matmul a b =
     let a_shape = a.shape in
     let b_shape = b.shape in
+    print_shape a_shape;
+    print_shape b_shape;
     let a_dim = Array.length a_shape in
     let b_dim = Array.length b_shape in
   
@@ -883,7 +889,9 @@ let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
 
 (* #TODO *)
 let relu arr =
-  not_implemented "relu"
+  let data_relu = Array.map (fun x -> if x > 0.0 then x else 0.0) arr.data in
+  { data = data_relu; shape = arr.shape }
+
 
 let to_string arr =
   let format_row row =

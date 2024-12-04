@@ -1,2 +1,3 @@
 (test
- (name tests))
+ (name ndarray_tests)
+ (libraries ounit2 ndarray))

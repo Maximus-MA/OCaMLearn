@@ -23,12 +23,12 @@ let get_parameters layer =
 
 (* ignore bias option *)
 let create_Linear ~in_features ~out_features ~bias =
-  let w = Tensor.rand [|out_features; in_features|] in
-  let b = Tensor.rand [|out_features|] in
+  let w = Tensor.rand [|in_features; out_features|] in
+  let b = Tensor.rand [|1; out_features|] in
   let parameters = [w; b] in
   let forward_fn inputs =
     let x = List.hd_exn inputs in
-    Tensor.(add (matmul w x) b) in
+    Tensor.(add (matmul x w) b) in
   create ~parameters ~forward_fn
 
 let create_Conv2d ~in_channels ~out_channels ~kernel_size ~stride ~padding =
