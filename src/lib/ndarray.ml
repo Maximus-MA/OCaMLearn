@@ -876,6 +876,8 @@ let map (arr: t) ~f :t=
 (* Reduction functions *)
 let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
   let arr_shape = arr.shape in
+  print_shape arr.shape;
+  print_shape target_shape;
   if Array.length arr_shape <> Array.length target_shape then
     failwith "Shapes must have the same number of dimensions for reduce_sum_to_shape";
   let axes_to_reduce = List.filter_map (fun (i, (dim_arr, dim_target)) ->
