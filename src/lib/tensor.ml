@@ -269,6 +269,7 @@ let matmul t1 t2 =
       t_new.backward_fn <- Some (fun () ->
         let grad_output = t_new.grad in
         let grad_t = Ndarray.transpose grad_output in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t);
         accumulate_grad t grad_t;
       );
     t_new
@@ -283,6 +284,7 @@ let reshape t ~shape =
     res.backward_fn <- Some (fun () ->
       let grad_output = res.grad in
       let grad_t = Ndarray.reshape grad_output (Ndarray.shape t.data) in
+      Printf.printf "[%s]\n" (Ndarray.to_string grad_t);
       accumulate_grad t grad_t;
     );
   res
@@ -448,6 +450,7 @@ let neg t =
       let grad_output = t_new.grad in
       (Ndarray.print_shape grad_output.shape);
       let grad_input = Ndarray.negate grad_output in
+      Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
       accumulate_grad t grad_input;
     );
   t_new
@@ -461,6 +464,7 @@ let relu t =
   res.backward_fn <- Some (fun () ->
     let grad_output = res.grad in
     let grad_input = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) grad_output in
+    Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
     accumulate_grad t grad_input);
   res
 

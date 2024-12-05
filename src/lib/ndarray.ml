@@ -403,7 +403,7 @@ let ones (shape: int array) : t =
 (* 生成随机值的ndarray *)
 let rand (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
-  let data = Array.init size (fun _ -> Random.float 1.0) in
+  let data = Array.init size (fun _ -> (Random.float 2.0) -. 1.0) in
   { data; shape }
 
 (* Xavier 初始化 *)
