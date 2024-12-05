@@ -166,3 +166,7 @@ val negate: t->t
 val relu: t->t
 
 val to_string: t->string
+
+val print_shape: int array ->unit
+
+val scaler: float -> t

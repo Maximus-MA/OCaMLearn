@@ -118,8 +118,8 @@ let add a b =
 
 (* 广播减法 *)
 let sub a b =
-  print_shape a.shape;
-  print_shape b.shape;
+  (* print_shape a.shape; *)
+  (* print_shape b.shape; *)
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
   let shape = broadcast_shape a.shape b.shape in
@@ -167,6 +167,8 @@ let sub a b =
 
 (* 广播乘法 *)
 let mul a b =
+  (* print_shape a.shape; *)
+  (* print_shape b.shape; *)
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
   let shape = broadcast_shape a.shape b.shape in
@@ -263,8 +265,8 @@ let div a b =
 let matmul a b =
     let a_shape = a.shape in
     let b_shape = b.shape in
-    print_shape a_shape;
-    print_shape b_shape;
+    (* print_shape a_shape; *)
+    (* print_shape b_shape; *)
     let a_dim = Array.length a_shape in
     let b_dim = Array.length b_shape in
   
@@ -378,6 +380,9 @@ let create (data: float array) (shape: int array) : t =
     failwith "Data length does not match shape dimensions"
   else
     { data; shape }
+
+let scaler (data: float) = 
+  create [|data|] [||]
 
 let create_float (data: float) = 
   create [|data|] [|1|]
@@ -631,9 +636,10 @@ let dsum t dim =
 let dmean t dim =
   let shape = t.shape in
   let ndim = Array.length shape in
-  print_shape t.shape;
+  (* print_shape t.shape; *)
   if dim < 0 || dim >= ndim then failwith "Dimension out of range";
   let new_shape = Array.init (ndim - 1) (fun i -> if i < dim then shape.(i) else shape.(i + 1)) in
+  (* print_shape new_shape; *)
   let num_new_elements = Array.fold_left ( * ) 1 new_shape in
   let result_data = Array.make num_new_elements 0.0 in
   let count = float_of_int shape.(dim) in
@@ -876,8 +882,8 @@ let map (arr: t) ~f :t=
 (* Reduction functions *)
 let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
   let arr_shape = arr.shape in
-  print_shape arr.shape;
-  print_shape target_shape;
+  (* print_shape arr.shape; *)
+  (* print_shape target_shape; *)
   if Array.length arr_shape <> Array.length target_shape then
     failwith "Shapes must have the same number of dimensions for reduce_sum_to_shape";
   let axes_to_reduce = List.filter_map (fun (i, (dim_arr, dim_target)) ->

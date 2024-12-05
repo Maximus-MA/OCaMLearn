@@ -11,7 +11,7 @@ type tensor = Tensor.t
 
 
 let backprop ts =
-  Tensor.set_grad ts (Ndarray.ones [|1|]);
+  Tensor.set_grad ts (Ndarray.scaler 1.0);
   let rec topo u vis res =
     if List.mem vis u ~equal:phys_equal 
       then vis, res
@@ -27,7 +27,7 @@ let backprop ts =
   List.iter res 
     ~f:(fun t -> 
       match t.backward_fn with 
-      | None -> () 
+      | None -> () ;
       | Some f -> f ();)
 
       
