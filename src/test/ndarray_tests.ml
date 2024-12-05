@@ -6,13 +6,13 @@ open Ndarray
 (* 辅助函数打印形状 *)
 let print_shape shape =
   Printf.printf "[%s]\n"
-    (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
+    (String.concat "; " (Array.to_list (Array.map string_of_int shape)))
 ;;
 
 (* 辅助函数打印数据 *)
 let print_data data =
   Printf.printf "[%s]\n"
-    (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_float data)))
+    (String.concat "; " (Array.to_list (Array.map string_of_float data)))
 ;;
 
 (* 简单的断言函数用于浮点数 *)
@@ -844,7 +844,7 @@ let test_exp () =
   let shape = [|4|] in
   let t = create data shape in
   let result = Ndarray.exp t in
-  let expected_data = [|Stdlib.exp 0.0; Stdlib.exp 1.0; Stdlib.exp (-1.0); Stdlib.exp 2.0|] in
+  let expected_data = [|exp 0.0; exp 1.0; exp (-1.0); exp 2.0|] in
   assert_equal_float_array expected_data result.data "Exp Function Data";
   assert_equal_int_array shape result.shape "Exp Function Shape";
 ;;
@@ -852,7 +852,7 @@ let test_exp () =
 (* Test log function *)
 let test_log () =
   Printf.printf "Testing log function...\n";
-  let data = [|1.0; Stdlib.exp 1.0; Stdlib.exp 2.0; Stdlib.exp 3.0|] in
+  let data = [|1.0; exp 1.0; exp 2.0; exp 3.0|] in
   let shape = [|4|] in
   let t = create data shape in
   let result = log t in
