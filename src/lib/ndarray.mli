@@ -48,6 +48,8 @@ val zeros : int array -> t
 val ones : int array -> t
 (** [ones shape] creates an ndarray of the given [shape] filled with ones. *)
 
+val arange : float -> t 
+
 val rand : int array -> t
 (** [rand shape] creates an ndarray of the given [shape] filled with random values between 0 and 1. *)
 

@@ -400,6 +400,11 @@ let ones (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   { data = Array.make size 1.0; shape }
 
+let arange stop : t=
+  let n = int_of_float stop in
+  let data = Array.init n (fun i -> float_of_int i) in
+  { data; shape = [|n|] }
+
 (* 生成随机值的ndarray *)
 let rand (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
@@ -880,19 +885,57 @@ let map (arr: t) ~f :t=
   {data= Array.map f arr.data; shape= arr.shape}
 
 (* Reduction functions *)
-let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
+(* let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
   let arr_shape = arr.shape in
-  (* print_shape arr.shape; *)
-  (* print_shape target_shape; *)
+  print_shape arr.shape;
+  print_shape target_shape;
   if Array.length arr_shape <> Array.length target_shape then
     failwith "Shapes must have the same number of dimensions for reduce_sum_to_shape";
   let axes_to_reduce = List.filter_map (fun (i, (dim_arr, dim_target)) ->
     if dim_arr <> dim_target then Some i else None
   ) (List.mapi (fun i dims -> (i, dims)) (Array.to_list (Array.combine arr_shape target_shape))) in
-  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce
+  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce *)
 
   let negate arr =
     { data = Array.map (fun x -> -.x) arr.data; shape = arr.shape }
+
+  (* Helper function to prepend ones to a shape array to match ranks *)
+let pad_shape_to arr_shape target_shape =
+  let arr_ndim = Array.length arr_shape in
+  let tgt_ndim = Array.length target_shape in
+  if arr_ndim = tgt_ndim then
+    arr_shape, target_shape
+  else if arr_ndim > tgt_ndim then
+    (* Prepend ones to target_shape *)
+    let padded = Array.init arr_ndim (fun i ->
+      if i < (arr_ndim - tgt_ndim) then 1 else target_shape.(i - (arr_ndim - tgt_ndim))
+    ) in
+    arr_shape, padded
+  else
+    failwith "reduce_sum_to_shape: target shape cannot have more dimensions than arr"
+
+let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
+  let arr_shape = shape arr in
+  (* If shapes differ in length, pad the shorter one with ones *)
+  let arr_shape, tgt_shape = pad_shape_to arr_shape target_shape in
+
+  if Array.length arr_shape <> Array.length tgt_shape then
+    failwith "Shapes must match in number of dimensions after padding for reduce_sum_to_shape";
+
+  (* Identify which axes need to be reduced *)
+  let axes_to_reduce = 
+    Array.to_list (Array.mapi (fun i (arr_dim, tgt_dim) ->
+      if arr_dim <> tgt_dim then Some i else None
+    ) (Array.combine arr_shape tgt_shape))
+    |> List.filter_map (fun x -> x)
+  in
+
+  (* We should reduce from the largest axis to smallest axis to avoid index shifting issues *)
+  let axes_to_reduce = List.rev (List.sort compare axes_to_reduce) in
+
+  (* Perform the reductions *)
+  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce
+
 
 
 

@@ -22,6 +22,8 @@ val zeros : int array -> t
 val ones : int array -> t
 (** [ones shape] creates a tensor filled with ones, of specified [shape]. *)
 
+val arange : float -> t 
+
 val rand : int array -> t
 (** [rand shape] creates a tensor with random values in the range [0,1] and the specified [shape]. *)
 

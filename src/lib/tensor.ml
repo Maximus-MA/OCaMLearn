@@ -56,6 +56,16 @@ let ones shape =
     prev = [];
   }
 
+let arange stop =
+  let data = Ndarray.arange stop in
+  {
+    data;
+    grad = Ndarray.zeros (Ndarray.shape data);
+    requires_grad = true;
+    backward_fn = None;
+    prev = [];
+  }
+
 let rand shape =
   let data = Ndarray.rand shape in
   {
@@ -109,6 +119,7 @@ let set t idx value =
 (* Gradient-related functions *)
 let accumulate_grad t grad =
     (* Printf.printf "[%s]\n" (Ndarray.to_string grad); *)
+    (Ndarray.print_shape t.grad.shape);
     t.grad <- Ndarray.add t.grad grad
 let zero_grad t =
   t.grad <- Ndarray.zeros @@ shape t
@@ -348,7 +359,7 @@ let sum ?dim t =
           | None -> float_of_int (Ndarray.numel (Ndarray.shape t.data))
         in
         let grad_input = match dim with
-          | Some d -> grad_output
+          | Some d -> Ndarray.expand_dims grad_output d
           | None -> not_implemented "mean" 
         in
         let grad_single = (Ndarray.create_float num_elements) in
@@ -463,7 +474,8 @@ let relu t =
   let res = create ~data ~requires_grad ~prev in
   res.backward_fn <- Some (fun () ->
     let grad_output = res.grad in
-    let grad_input = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) grad_output in
+    let mask = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) t.data in
+    let grad_input = Ndarray.mul grad_output mask in
     Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
     accumulate_grad t grad_input);
   res

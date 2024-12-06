@@ -1,7 +1,7 @@
 open Core
 
 let () =
-  let input = Tensor.rand [|2; 100|] in
+  let input = Tensor.ones [|2; 100|] in
   let model = Model.create_Sequential [
     Model.create_Linear ~in_features:100 ~out_features:50 ~bias:true;
     Model.create_ReLU ();

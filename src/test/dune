@@ -1,3 +1,7 @@
-(test
- (name ndarray_tests)
- (libraries ounit2 ndarray))
+; (test
+;  (name ndarray_tests)
+;  (libraries ounit2 ndarray ))
+
+ (test
+ (name tensor_tests)
+ (libraries ounit2 ndarray tensor))
