@@ -895,35 +895,46 @@ let relu arr =
   let data_relu = Array.map (fun x -> if x > 0.0 then x else 0.0) arr.data in
   { data = data_relu; shape = arr.shape }
 
+let broadcast_to (arr: t) (new_shape: int array) : t =
+  let arr_shape = arr.shape in
+  let new_shape = Array.of_list (List.map (fun x -> if x = 1 then 1 else x) (Array.to_list new_shape)) in
+  if Array.length arr_shape <> Array.length new_shape then
+    failwith "Shapes must have the same number of dimensions for broadcast_to";
+  let axes_to_expand = List.filter_map (fun (i, (dim_arr, dim_target)) ->
+    if dim_arr <> dim_target then Some i else None
+  ) (List.mapi (fun i dims -> (i, dims)) (Array.to_list (Array.combine arr_shape new_shape))) in
+  List.fold_left (fun acc axis -> expand_dims acc axis) arr axes_to_expand
 
-  let to_string arr =
-    let format_row row =
-      Printf.sprintf "[%s]" (String.concat ", " (Array.to_list (Array.map string_of_float row)))
-    in
-    let rec format_ndarray data shape level =
-      if Array.length shape = 0 then
-        (* Shape 为空，表示标量值 *)
-        string_of_float data.(0)
-      else if Array.length shape = 1 then
-        (* 最后一维 *)
-        format_row (Array.init shape.(0) (fun i -> data.(i)))
-      else
-        (* 多维数组情况 *)
-        let dim = shape.(0) in
-        let sub_shape = Array.sub shape 1 (Array.length shape - 1) in
-        let sub_size = Array.fold_left ( * ) 1 sub_shape in
-        let sub_arrays = Array.init dim (fun i ->
-          let start_idx = i * sub_size in
-          Array.sub data start_idx sub_size
-        ) in
-        let indent = String.make (2 * level) ' ' in
-        let sub_results = Array.map (fun sub -> format_ndarray sub sub_shape (level + 1)) sub_arrays in
-        Printf.sprintf "[\n%s%s\n%s]" indent
-          (String.concat (Printf.sprintf ",\n%s" indent) (Array.to_list sub_results))
-          (if level > 0 then String.make (2 * (level - 1)) ' ' else "")
-    in
-    (* 检查形状和数据是否匹配 *)
-    if Array.fold_left ( * ) 1 arr.shape <> Array.length arr.data then
-      failwith "Shape and data size mismatch"
+
+let to_string arr =
+  let format_row row =
+    Printf.sprintf "[%s]" (String.concat ", " (Array.to_list (Array.map string_of_float row)))
+  in
+  let rec format_ndarray data shape level =
+    if Array.length shape = 0 then
+      (* Shape 为空，表示标量值 *)
+      string_of_float data.(0)
+    else if Array.length shape = 1 then
+      (* 最后一维 *)
+      format_row (Array.init shape.(0) (fun i -> data.(i)))
     else
-      format_ndarray arr.data arr.shape 0
+      (* 多维数组情况 *)
+      let dim = shape.(0) in
+      let sub_shape = Array.sub shape 1 (Array.length shape - 1) in
+      let sub_size = Array.fold_left ( * ) 1 sub_shape in
+      let sub_arrays = Array.init dim (fun i ->
+        let start_idx = i * sub_size in
+        Array.sub data start_idx sub_size
+      ) in
+      let indent = String.make (2 * level) ' ' in
+      let sub_results = Array.map (fun sub -> format_ndarray sub sub_shape (level + 1)) sub_arrays in
+      Printf.sprintf "[\n%s%s\n%s]" indent
+        (String.concat (Printf.sprintf ",\n%s" indent) (Array.to_list sub_results))
+        (if level > 0 then String.make (2 * (level - 1)) ' ' else "")
+  in
+  (* 检查形状和数据是否匹配 *)
+  if Array.fold_left ( * ) 1 arr.shape <> Array.length arr.data then
+    failwith "Shape and data size mismatch"
+  else
+    format_ndarray arr.data arr.shape 0
+
