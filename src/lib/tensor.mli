@@ -184,12 +184,22 @@ val relu : t -> t
 (** [relu t] applies the Rectified Linear Unit function element-wise to tensor [t]. *)
 
 val slice : t -> (int * int) list -> t
+(** [slice t ranges] extracts a slice from tensor [t] based on the given ranges for each dimension.
+    The [ranges] argument is a list of tuples specifying the start and end indices for slicing along each dimension. *)
 
 val to_string : t -> string
+(** [to_string t] converts tensor [t] into its string representation, formatting the data according to its shape and values.
+    The result is a human-readable string of the tensor's contents. *)
 
-val softmax : t -> t 
+val softmax : t -> t
+(** [softmax t] applies the softmax function to tensor [t], transforming the elements along the last dimension into probabilities.
+    Each element is exponentiated and normalized so that the sum of all elements along the dimension equals 1. *)
 
-val log_softmax : t -> t 
+val log_softmax : t -> t
+(** [log_softmax t] applies the logarithm of the softmax function to tensor [t].
+    This function is useful for numerically stable computation of log-probabilities, often used in classification problems. *)
 
 val neg : t -> t
+(** [neg t] negates each element of tensor [t] element-wise.
+    Each element of the tensor is multiplied by -1. *)
 
