@@ -502,17 +502,18 @@ let test_log_softmax _ =
   assert_bool "Log-Softmax backward"
     (float_ndarray_equal ~epsilon:eps t.T.grad expected_grad)
 
-let test_slice _ = 
-  let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.; 7.; 8.|] [|2; 4|]) ~requires_grad:true in
+  let test_slice _ = 
+    let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.; 7.; 8.|] [|2; 4|]) ~requires_grad:true in
+    
+    (* Correct the slice range: The original range [(0, 1); (1, 3)] is valid, 
+        but the actual test might not handle the indices correctly. *)
+    let out = T.slice t [(0, 1); (1, 3)] in
+    (* Correct the expected output: Extract elements [2; 3] within the range, with shape [1; 2]. *)
+    let expected_data = N.create [|2.; 3.|] [|1; 2|] in
   
-  (* 修正切片范围: 原范围 [(0, 1); (1, 3)] 是合法的，但实际测试可能未正确处理索引 *)
-  let out = T.slice t [(0, 1); (1, 3)] in
-  (* 修正预期输出: 提取范围内的元素 [2; 3]，形状为 [1; 2] *)
-  let expected_data = N.create [|2.; 3.|] [|1; 2|] in
-
-  (* 验证前向传播的输出是否正确 *)
-  assert_bool "Slice forward"
-    (float_ndarray_equal ~epsilon:eps out.T.data expected_data)
+    (* Verify whether the forward pass output is correct *)
+    assert_bool "Slice forward"
+      (float_ndarray_equal ~epsilon:eps out.T.data expected_data)
 
 let suite =
   "Test Tensor Broadcast" >::: [
