@@ -124,11 +124,6 @@ We wrote the tests for ndarray and tensor in **test/**, and we had to change the
 - Ensure all code that is not working is either fixed or commented out.
 
 
-
-## Conclusion
-
-At this code checkpoint, we have approximately half of the core functionality in place. The `ndarray` module is nearly complete and well-tested, while the `tensor` module implements a good subset of the planned automatic differentiation features. With a solid foundation in place, we will spend the remaining time finalizing operations, improving the backward passes, enhancing test coverage, and implementing a small but functional neural network training example (MNIST).
-
 ## High-level Example
 Here is an example to use our framework to train a MLP on random data.
 ```ocaml
@@ -167,3 +162,10 @@ Loss: Tensor {data = 0.733882587709, requires_grad = true}
 Loss: Tensor {data = 0.836976953813, requires_grad = true}
 ```
 According to output, we can see that the model is converging!
+
+
+
+
+## Conclusion
+
+At this code checkpoint, we have approximately half of the core functionality in place. The `ndarray` module is nearly complete and well-tested, while the `tensor` module implements a good subset of the planned automatic differentiation features. With a solid foundation in place, we will spend the remaining time finalizing operations, improving the backward passes, enhancing test coverage, and implementing a small but functional neural network training example (MNIST).
