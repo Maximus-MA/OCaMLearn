@@ -6,55 +6,18 @@ type t = {
   forward_fn: tensor list -> tensor; (* Function to compute the forward pass of the layer. *)
 }
 
-(* 
-   Performs a forward pass through the layer.
-
-   Parameters:
-   - `layer`: The layer instance to perform the forward pass.
-   - `inputs`: A list of input tensors to pass through the layer.
-
-   Returns:
-   - The output tensor resulting from the forward pass.
- *)
 val forward : t -> tensor list -> tensor
+(** [forward layer inputs] performs a forward pass through the given layer [layer] using the provided list of input tensors [inputs].
+    It returns the output tensor resulting from the forward pass. *)
 
-(* 
-   Retrieves the parameters of the layer.
-
-   Parameters:
-   - `layer`: The layer instance to get parameters from.
-
-   Returns:
-   - A list of tensors representing the layer's parameters.
- *)
 val get_parameters : t -> tensor list
+(** [get_parameters layer] retrieves the parameters of the given layer [layer].
+    It returns a list of tensors representing the layer's parameters. *)
 
-(* 
-   Creates a linear (fully connected) layer.
-
-   Parameters:
-   - `in_features`: The number of input features.
-   - `out_features`: The number of output features.
-   - `bias`: Whether to include a bias term.
-
-   Returns:
-   - A new linear layer instance.
- *)
 val create_Linear : in_features:int -> out_features:int -> bias:bool -> t
+(** [create_Linear in_features out_features bias] creates a new linear (fully connected) layer with the specified number of input features [in_features],
+    output features [out_features], and an optional bias term [bias]. *)
 
-(* 
-   Creates a 2D convolutional layer.
-
-   Parameters:
-   - `in_channels`: The number of input channels.
-   - `out_channels`: The number of output channels.
-   - `kernel_size`: The size of the convolutional kernel.
-   - `stride`: The stride for the convolution.
-   - `padding`: The padding to apply around the input.
-
-   Returns:
-   - A new 2D convolutional layer instance.
- *)
 val create_Conv2d : 
   in_channels:int -> 
   out_channels:int -> 
@@ -62,102 +25,33 @@ val create_Conv2d :
   stride:int -> 
   padding:int -> 
   t
+(** [create_Conv2d in_channels out_channels kernel_size stride padding] creates a new 2D convolutional layer with the specified number of input channels [in_channels],
+    output channels [out_channels], kernel size [kernel_size], stride [stride], and padding [padding]. *)
 
-(* 
-   Creates a flattening layer.
-
-   Parameters:
-   - `unit`: No parameters required.
-
-   Returns:
-   - A layer that flattens the input tensor.
- *)
 val create_Flatten : unit -> t
+(** [create_Flatten ()] creates a layer that flattens the input tensor into a 1D vector. *)
 
-(* 
-   Creates a sequential container for layers.
-
-   Parameters:
-   - `layers`: A list of layers to chain together sequentially.
-
-   Returns:
-   - A sequential container representing the stacked layers.
- *)
 val create_Sequential : t list -> t
+(** [create_Sequential layers] creates a sequential container that chains together the given list of layers [layers]. *)
 
-(* 
-   Creates a ReLU activation layer.
-
-   Parameters:
-   - `unit`: No parameters required.
-
-   Returns:
-   - A layer applying the ReLU activation function element-wise.
- *)
 val create_ReLU : unit -> t
+(** [create_ReLU ()] creates a ReLU activation layer that applies the ReLU activation function element-wise. *)
 
-(* 
-   Creates a Sigmoid activation layer.
-
-   Parameters:
-   - `unit`: No parameters required.
-
-   Returns:
-   - A layer applying the Sigmoid activation function element-wise.
- *)
 val create_Sigmoid : unit -> t
+(** [create_Sigmoid ()] creates a Sigmoid activation layer that applies the Sigmoid activation function element-wise. *)
 
-(* 
-   Creates a Leaky ReLU activation layer.
-
-   Parameters:
-   - `alpha`: Optional negative slope for the Leaky ReLU.
-
-   Returns:
-   - A layer applying the Leaky ReLU activation function element-wise.
- *)
 val create_LeakyReLU : ?alpha:float -> t
+(** [create_LeakyReLU ?alpha] creates a Leaky ReLU activation layer that applies the Leaky ReLU activation function element-wise.
+    Optionally, a negative slope [alpha] can be specified. *)
 
-(* 
-   Creates a Tanh activation layer.
-
-   Parameters:
-   - `unit`: No parameters required.
-
-   Returns:
-   - A layer applying the Tanh activation function element-wise.
- *)
 val create_Tanh : unit -> t
+(** [create_Tanh ()] creates a Tanh activation layer that applies the Tanh activation function element-wise. *)
 
-(* 
-   Creates a Softmax activation layer.
-
-   Parameters:
-   - `unit`: No parameters required.
-
-   Returns:
-   - A layer applying the Softmax function along the last dimension.
- *)
 val create_Softmax : unit -> t
+(** [create_Softmax ()] creates a Softmax activation layer that applies the Softmax function along the last dimension of the input. *)
 
-(* 
-   Creates a Mean Squared Error (MSE) loss layer.
-
-   Parameters:
-   - `unit`: No parameters required.
-
-   Returns:
-   - A layer computing the Mean Squared Error loss.
- *)
 val create_MSE : unit -> t
+(** [create_MSE ()] creates a Mean Squared Error (MSE) loss layer that computes the MSE loss between predictions and true labels. *)
 
-(* 
-   Creates a Cross Entropy loss layer.
-
-   Parameters:
-   - `unit`: No parameters required.
-
-   Returns:
-   - A layer computing the Cross Entropy loss.
- *)
 val create_CrossEntropy : unit -> t
+(** [create_CrossEntropy ()] creates a Cross Entropy loss layer that computes the Cross Entropy loss for classification tasks. *)

@@ -7,51 +7,15 @@ type t = {
   zero_grad: unit -> unit;  (* Function to reset all gradients to zero. *)
 }
 
-(* 
-   Creates an SGD (Stochastic Gradient Descent) optimizer.
-
-   Parameters:
-   - `params`: A list of tensors to be optimized.
-   - `lr`: The learning rate for the optimizer.
-
-   Returns:
-   - An instance of the SGD optimizer.
- *)
 val create_SGD : params:tensor list -> lr:float -> t
+(** [create_SGD params lr] creates an SGD (Stochastic Gradient Descent) optimizer for the list of tensors [params] with the specified learning rate [lr]. *)
 
-(* 
-   Creates an Adam optimizer.
-
-   Parameters:
-   - `params`: A list of tensors to be optimized.
-   - `lr`: The learning rate for the optimizer.
-   - `beta1`: The first exponential decay rate for the moment estimates.
-   - `beta2`: The second exponential decay rate for the moment estimates.
-   - `eps`: A small constant to prevent division by zero.
-
-   Returns:
-   - An instance of the Adam optimizer.
- *)
 val create_Adam : params:tensor list -> lr:float -> beta1:float -> beta2:float -> eps:float -> t
+(** [create_Adam params lr beta1 beta2 eps] creates an Adam optimizer for the list of tensors [params] with the specified learning rate [lr], first moment decay rate [beta1],
+    second moment decay rate [beta2], and small constant [eps] to prevent division by zero. *)
 
-(* 
-   Performs a single optimization step.
-
-   Parameters:
-   - `optimizer`: The optimizer instance.
-
-   Returns:
-   - Updates the parameters of the optimizer in place. No return value.
- *)
 val step : t -> unit
+(** [step optimizer] performs a single optimization step and updates the parameters of the optimizer in place. *)
 
-(* 
-   Resets all gradients of the parameters to zero.
-
-   Parameters:
-   - `optimizer`: The optimizer instance.
-
-   Returns:
-   - Clears the gradients of all parameters. No return value.
- *)
 val zero_grad : t -> unit
+(** [zero_grad optimizer] resets all gradients of the parameters to zero, clearing the gradients of all parameters. *)

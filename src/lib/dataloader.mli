@@ -1,57 +1,30 @@
 type dataset = Dataset.t
-
 type tensor = Tensor.t
-
 type transform = Transform.t
 
 (* Represents a dataset consisting of data and labels. *)
 type tensor_dataset = {
-    data : tensor;  (* Data tensor containing the samples. *)
-    label : tensor; (* Label tensor corresponding to the data. *)
+  data : tensor; (* Data tensor containing the samples. *)
+  label : tensor; (* Label tensor corresponding to the data. *)
 }
 
 (* DataLoader type containing the dataset and batching information. *)
 type t = {
-  dataset : tensor_dataset;  (* Tensor dataset used for loading batches. *)
-  batch_size : int;          (* Number of samples per batch. *)
-  total_batches : int;       (* Total number of batches available. *)
+  dataset : tensor_dataset; (* Tensor dataset used for loading batches. *)
+  batch_size : int; (* Number of samples per batch. *)
+  total_batches : int; (* Total number of batches available. *)
 }
 
-(* 
-   Creates a new data loader.
-
-   Parameters:
-   - `dataset`: The input dataset to load batches from.
-   - `batch_size`: The number of samples in each batch.
-   - `shuffle`: Whether to shuffle the dataset before batching.
-   - `transorms`: Optional list of transformations to apply to the dataset.
-
-   Returns:
-   - A data loader configured with the specified parameters.
- *)
 val create : ?transforms:transform list -> dataset -> batch_size:int -> shuffle:bool -> t
+(** [create ?transforms dataset batch_size shuffle] creates a new data loader
+    from the specified dataset. Optionally applies a list of transformations to
+    the dataset. If [shuffle] is true, the dataset is shuffled before batching.
+*)
 
-(* 
-   Retrieves a batch from the data loader.
-
-   Parameters:
-   - `dataloader`: The data loader instance.
-   - `idx`: The batch index to retrieve.
-
-   Returns:
-   - A tuple containing:
-     - The data tensor for the batch.
-     - The label tensor for the batch.
- *)
 val get_batch : t -> int -> tensor_dataset
+(** [get_batch dataloader idx] retrieves the batch at the specified index [idx]
+    from the data loader [dataloader]. *)
 
-(* 
-   Gets the total number of batches in the data loader.
-
-   Parameters:
-   - `dataloader`: The data loader instance.
-
-   Returns:
-   - The total number of batches available in the data loader.
- *)
 val get_total_batches : t -> int
+(** [get_total_batches dataloader] returns the total number of batches available
+    in the data loader [dataloader]. *)

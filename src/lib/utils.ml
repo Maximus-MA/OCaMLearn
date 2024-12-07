@@ -1,4 +1,4 @@
-(* src/backprop.ml *)
+(* src/utils.ml *)
 
 [@@@ocaml.warning "-27"]
 open Core
