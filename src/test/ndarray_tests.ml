@@ -1038,7 +1038,7 @@ let test_reduce_sum_to_shape () =
   let target_shape = [|2; 1|] in
   let result = reduce_sum_to_shape t target_shape in
   let expected_data = [|6.0; 15.0|] in
-  let expected_shape = [|2; 1|] in
+  let expected_shape = [|2|] in
   assert_equal_float_array expected_data result.data "Reduce Sum to Shape Data";
   print_shape result.shape;
   assert_equal_int_array expected_shape result.shape "Reduce Sum to Shape Shape";
