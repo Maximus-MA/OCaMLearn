@@ -989,7 +989,7 @@ let relu arr =
   let data_relu = Array.map (fun x -> if x > 0.0 then x else 0.0) arr.data in
   { data = data_relu; shape = arr.shape }
 
-let broadcast_to (arr: t) (new_shape: int array) : t =
+(* let broadcast_to (arr: t) (new_shape: int array) : t =
   let arr_shape = arr.shape in
   let new_shape = Array.of_list (List.map (fun x -> if x = 1 then 1 else x) (Array.to_list new_shape)) in
   if Array.length arr_shape <> Array.length new_shape then
@@ -998,7 +998,7 @@ let broadcast_to (arr: t) (new_shape: int array) : t =
     if dim_arr <> dim_target then Some i else None
   ) (List.mapi (fun i dims -> (i, dims)) (Array.to_list (Array.combine arr_shape new_shape))) in
   List.fold_left (fun acc axis -> expand_dims acc axis) arr axes_to_expand
-
+ *)
 
 let to_string arr =
   let format_row row =
