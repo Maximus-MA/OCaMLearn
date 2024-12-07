@@ -1,10 +1,10 @@
 (* src/ndarray.ml *)
 [@@@ocaml.warning "-27"]
 
-let print_shape shape =
+(* let print_shape shape =
   Printf.printf "[%s]\n"
     (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
-;;
+;; *)
 
 (* let print_data data =
   Printf.printf "[%s]\n"
@@ -388,12 +388,6 @@ let create (data: float array) (shape: int array) : t =
 
 let scaler (data: float) = 
   create [|data|] [||]
-
-let create_float (data: float) = 
-  create [|data|] [|1|]
-
-let create_int (data: int) = 
-  create_float (float_of_int data)
 
 (* 生成全零的ndarray *)
 let zeros (shape: int array) : t =

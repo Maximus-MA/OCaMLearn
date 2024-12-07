@@ -36,12 +36,6 @@ val matmul : t -> t -> t
 val create : float array -> int array -> t
 (** [create data shape] creates a new ndarray with the given [data] and [shape]. *)
 
-val create_float : float -> t
-(** [create_float data] creates a new ndarray with the given scalar [data]. *)
-
-val create_int : int -> t
-(** [create_int data] creates a new ndarray with the given scalar [data]. *)
-
 val zeros : int array -> t
 (** [zeros shape] creates an ndarray of the given [shape] filled with zeros. *)
 
@@ -158,6 +152,7 @@ val expand_dims : t -> int -> t
 val squeeze : t -> t
 (** [squeeze t] removes dimensions of size 1 from [t]. *)
 
+val pad_shape_to : int array -> int array -> int array * int array
 
 val map : t-> f: (float -> float) ->t
 
@@ -168,7 +163,5 @@ val negate: t->t
 val relu: t->t
 
 val to_string: t->string
-
-val print_shape: int array ->unit
 
 val scaler: float -> t

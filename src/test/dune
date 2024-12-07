@@ -1,7 +1,9 @@
 ; (test
 ;  (name ndarray_tests)
-;  (libraries ounit2 ndarray ))
+;  (libraries ounit2 ndarray)
+;  (preprocess (pps bisect_ppx)))
 
  (test
  (name tensor_tests)
- (libraries ounit2 ndarray tensor))
+ (libraries ounit2 ndarray tensor)
+ (preprocess (pps bisect_ppx)))

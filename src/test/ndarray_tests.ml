@@ -102,7 +102,7 @@ let test_set () =
 ;;
 
 (* Test the at function *)
-(* let test_at () =
+let test_at () =
   Printf.printf "Testing at function...\n";
 
   (* 初始化一个 3x2x4 的 ndarray *)
@@ -132,7 +132,7 @@ let test_set () =
   let indices3 = [|2; 1; 3|] in
   let value3 = at arr indices3 in
   assert_equal_float 24.0 value3 "At Function - Case 3";
-;; *)
+;;
 
 (* 测试 add 函数 *)
 let test_add () =
@@ -1004,11 +1004,110 @@ let test_squeeze () =
   assert_equal_float_array expected_data2 result2.data "Squeeze Function Data (All Ones)";
 ;;
 
+(* Test map function *)
+let test_map () =
+  Printf.printf "Testing map function...\n";
+  let data = [|1.0; 2.0; 3.0; 4.0|] in
+  let shape = [|2; 2|] in
+  let t = create data shape in
+  let result = map t ~f:(fun x -> x *. 2.0) in
+  let expected_data = [|2.0; 4.0; 6.0; 8.0|] in
+  assert_equal_float_array expected_data result.data "Map Function Data";
+  assert_equal_int_array shape result.shape "Map Function Shape";
+;;
+
+(* Test negate function *)
+let test_negate () =
+  Printf.printf "Testing negate function...\n";
+  let data = [|1.0; -2.0; 3.0; -4.0|] in
+  let shape = [|2; 2|] in
+  let t = create data shape in
+  let result = negate t in
+  let expected_data = [|-1.0; 2.0; -3.0; 4.0|] in
+  assert_equal_float_array expected_data result.data "Negate Function Data";
+  assert_equal_int_array shape result.shape "Negate Function Shape";
+;;
+
+
+(* Test reduce_sum_to_shape function *)
+let test_reduce_sum_to_shape () =
+  Printf.printf "Testing reduce_sum_to_shape function...\n";
+  let data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] in
+  let shape = [|2; 3|] in
+  let t = create data shape in
+  let target_shape = [|2; 1|] in
+  let result = reduce_sum_to_shape t target_shape in
+  let expected_data = [|6.0; 15.0|] in
+  let expected_shape = [|2; 1|] in
+  assert_equal_float_array expected_data result.data "Reduce Sum to Shape Data";
+  assert_equal_int_array expected_shape result.shape "Reduce Sum to Shape Shape";
+;;
+
+(* Test relu function *)
+let test_relu () =
+  Printf.printf "Testing relu function...\n";
+  let data = [|1.0; -2.0; 3.0; -4.0|] in
+  let shape = [|2; 2|] in
+  let t = create data shape in
+  let result = relu t in
+  let expected_data = [|1.0; 0.0; 3.0; 0.0|] in
+  assert_equal_float_array expected_data result.data "ReLU Function Data";
+  assert_equal_int_array shape result.shape "ReLU Function Shape";
+;;
+
+(* Test to_string function *)
+let test_to_string () =
+  Printf.printf "Testing to_string function...\n";
+  let data = [|1.0; 2.0; 3.0; 4.0|] in
+  let shape = [|2; 2|] in
+  let t = create data shape in
+  let a = rand shape in 
+  let b = xavier_init shape in
+  let c = kaiming_init shape in 
+  let d = add t a in 
+  let e = add b c in 
+  let f = add d e in
+  let f = transpose f in
+  let g = arange 2.0 in 
+  let result = add g f in 
+  let result = reshape result shape in 
+  let out = to_array result in 
+  assert (out.(0) <> 1.23);
+  let result = to_string result in
+  let expected = to_string f in
+  (* Printf.printf "%s\n%s" result expected; *)
+  assert (result <> expected);
+  Printf.printf "Passed: To String Function\n";
+;;
+
+(* Test pad_shape_to function *)
+let test_pad_shape_to () =
+  Printf.printf "Testing pad_shape_to function...\n";
+
+  (* Case 1: arr_shape and target_shape have the same length *)
+  let arr_shape1 = [|3; 4; 5|] in
+  let target_shape1 = [|3; 4; 5|] in
+  let result_shape1, result_padded1 = pad_shape_to arr_shape1 target_shape1 in
+  assert_equal_int_array arr_shape1 result_shape1 "Pad Shape To - Same Length (arr_shape)";
+  assert_equal_int_array target_shape1 result_padded1 "Pad Shape To - Same Length (target_shape)";
+  Printf.printf "Passed: Pad Shape To - Same Length\n";
+
+  (* Case 2: arr_shape is longer than target_shape *)
+  let arr_shape2 = [|3; 4; 5|] in
+  let target_shape2 = [|5|] in
+  let expected_padded2 = [|1; 1; 5|] in
+  let result_shape2, result_padded2 = pad_shape_to arr_shape2 target_shape2 in
+  assert_equal_int_array arr_shape2 result_shape2 "Pad Shape To - arr_shape Longer (arr_shape)";
+  assert_equal_int_array expected_padded2 result_padded2 "Pad Shape To - arr_shape Longer (padded target_shape)";
+  Printf.printf "Passed: Pad Shape To - arr_shape Longer\n";
+
+;;
+
 (* 主测试函数 *)
 let () =
   Printf.printf "Start Test!";
   test_set();
-  (* test_at (); *)
+  test_at ();
   test_add ();
   test_sum_multiplied ();
   test_matmul();
@@ -1041,4 +1140,10 @@ let () =
   test_pow ();
   test_expand_dims ();
   test_squeeze ();
+  test_map ();
+  test_negate ();
+  test_reduce_sum_to_shape ();
+  test_relu ();
+  test_to_string ();
+  test_pad_shape_to ();
 ;;

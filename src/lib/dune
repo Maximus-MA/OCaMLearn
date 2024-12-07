@@ -1,12 +1,14 @@
 (library
  (name ndarray)
  (modules ndarray)
- (libraries core))
+ (libraries core)
+ (preprocess (pps bisect_ppx)))
 
 (library
  (name tensor)
  (modules tensor)
- (libraries core ndarray))
+ (libraries core ndarray)
+ (preprocess (pps bisect_ppx)))
 
 (library
  (name model)

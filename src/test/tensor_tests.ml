@@ -241,6 +241,7 @@ let test_broadcast_div _ =
   (* Test arithmetic operations *)
   let test_add_grad_accumulate _ =
     let t1 = T.ones [|2;2|] in
+    let t1 = T.transpose t1 in 
     let t2 = T.ones [|2;2|] in
     let out = T.add t1 t2 in
     out.T.grad <- N.ones [|2;2|]; 
@@ -343,6 +344,7 @@ let test_broadcast_div _ =
     let expected = N.full [|2;3|] 2. in
     assert_bool "transpose grad accumulation" (float_ndarray_equal ~epsilon:eps t.T.grad expected)
    *)
+
   (* Test reshape *)
   let test_reshape_mismatch _ =
     let t = T.arange 8. in
@@ -428,7 +430,90 @@ let test_broadcast_div _ =
     let expected_grad = N.zeros [|2|] in
     assert_bool "relu backward all negative"
       (float_ndarray_equal ~epsilon:eps t.T.grad expected_grad)
+
+
+let float_array_equal ~(epsilon:float) arr1 arr2 =
+  let len1 = Array.length arr1 in
+  let len2 = Array.length arr2 in
+  if len1 <> len2 then false else
+    Array.for_alli arr1 ~f:(fun i x ->
+      Float.(abs (x -. arr2.(i)) < epsilon))
+
+let float_ndarray_equal ~epsilon nd1 nd2 =
+  let arr1 = N.to_array nd1 in
+  let arr2 = N.to_array nd2 in
+  float_array_equal ~epsilon arr1 arr2
+
+
+let eps = 1e-7
+
+
+(* Test softmax *)
+let test_softmax _ =
+  let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.|] [|4|]) ~requires_grad:true in
+  let out = T.softmax t in
+  let max_val = 4. in
+  let shifted_logits = [|1. -. max_val; 2. -. max_val; 3. -. max_val; 4. -. max_val|] in
+  let exp_logits = Stdlib.Array.map exp shifted_logits in
+  let sum_exp = Array.fold ~init:0. ~f:(+.) exp_logits in
+  let expected = Stdlib.Array.map (fun x -> x /. sum_exp) exp_logits in
+  let expected = N.create expected [|4|] in
+  assert_bool "Softmax forward" (float_ndarray_equal ~epsilon:eps out.T.data expected);
+
+  (* Backward *)
+  T.zero_grad t; T.zero_grad out;
+  out.T.grad <- N.ones [|4|];
+  (match out.T.backward_fn with
+    | Some fn -> fn ()
+    | None -> assert_failure "No backward for softmax");
+
+  (* Check gradient *)
+  let softmax_vals = Stdlib.Array.map (fun x -> x /. sum_exp) exp_logits in
+  let softmax_nd = N.create softmax_vals [|4|] in
+  let sum_grad = N.dsum (N.mul out.T.grad softmax_nd) 0 in
+  let expected_grad = N.mul softmax_nd (N.sub out.T.grad sum_grad) in
+  assert_bool "Softmax backward"
+    (float_ndarray_equal ~epsilon:eps t.T.grad expected_grad)
+
+(* Test log_softmax *)
+let test_log_softmax _ =
+
+  let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.|] [|4|]) ~requires_grad:true in
+  let out = T.log_softmax t in
+  let max_val = 4. in
+  let shifted_logits = [|1. -. max_val; 2. -. max_val; 3. -. max_val; 4. -. max_val|] in
+  let sum_exp = Array.fold ~init:0. ~f:(+.) (Stdlib.Array.map Float.exp shifted_logits) in
+  let log_probs = Stdlib.Array.map (fun x -> x -. Float.log sum_exp) shifted_logits in 
+  let log_probs = N.create log_probs [|4|] in
+  assert_bool "Log-Softmax forward" (float_ndarray_equal ~epsilon:eps out.T.data log_probs);
+
+  (* Backward *)
+  T.zero_grad t; T.zero_grad out;
+  out.T.grad <- N.ones [|4|];
+  (match out.T.backward_fn with
+    | Some fn -> fn ()
+    | None -> assert_failure "No backward for log_softmax");
+
+  (* Check gradient *)
+  let softmax_vals = Stdlib.Array.map (fun x -> Float.exp x /. sum_exp) shifted_logits in
+  let softmax_nd = N.create softmax_vals [|4|] in
+  let sum_grad = N.dsum (N.mul out.T.grad softmax_nd) 0 in
+  let expected_grad = N.sub out.T.grad (N.mul softmax_nd sum_grad) in
+  assert_bool "Log-Softmax backward"
+    (float_ndarray_equal ~epsilon:eps t.T.grad expected_grad)
+
+let test_slice _ = 
+  let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.; 7.; 8.|] [|2; 4|]) ~requires_grad:true in
   
+  (* 修正切片范围: 原范围 [(0, 1); (1, 3)] 是合法的，但实际测试可能未正确处理索引 *)
+  let out = T.slice t [(0, 1); (1, 3)] in
+  (* 修正预期输出: 提取范围内的元素 [2; 3]，形状为 [1; 2] *)
+  let expected_data = N.create [|2.; 3.|] [|1; 2|] in
+
+  (* 验证前向传播的输出是否正确 *)
+  assert_bool "Slice forward"
+    (float_ndarray_equal ~epsilon:eps out.T.data expected_data)
+
 let suite =
   "Test Tensor Broadcast" >::: [
     "test_broadcast_add" >:: test_broadcast_add;
@@ -451,6 +536,9 @@ let suite =
     "test_mean_dim" >:: test_mean_dim;
     "test_neg_no_requires_grad" >:: test_neg_no_requires_grad;
     "test_relu_all_negative" >:: test_relu_all_negative;
+    "test_softmax" >:: test_softmax;
+    "test_log_softmax" >:: test_log_softmax;
+    "test_slice" >:: test_slice;
   ]
 
 let () =
