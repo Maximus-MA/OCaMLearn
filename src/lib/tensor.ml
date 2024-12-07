@@ -56,6 +56,16 @@ let ones shape =
     prev = [];
   }
 
+let arange stop =
+  let data = Ndarray.arange stop in
+  {
+    data;
+    grad = Ndarray.zeros (Ndarray.shape data);
+    requires_grad = true;
+    backward_fn = None;
+    prev = [];
+  }
+
 let rand shape =
   let data = Ndarray.rand shape in
   {
@@ -108,6 +118,8 @@ let set t idx value =
 
 (* Gradient-related functions *)
 let accumulate_grad t grad =
+    (* Printf.printf "[%s]\n" (Ndarray.to_string grad); *)
+    (Ndarray.print_shape t.grad.shape);
     t.grad <- Ndarray.add t.grad grad
 let zero_grad t =
   t.grad <- Ndarray.zeros @@ shape t
@@ -141,9 +153,11 @@ let add t1 t2 =
       let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t1.data) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t2.data) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
         accumulate_grad t2 grad_t2;
 		);
   t
@@ -164,9 +178,11 @@ let sub t1 t2 =
       let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t1.data) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = (Ndarray.negate grad_output |> Ndarray.reduce_sum_to_shape) (shape t2) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
         accumulate_grad t2 grad_t2;
     );
   t
@@ -186,9 +202,11 @@ let mul t1 t2 =
       let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = (Ndarray.mul grad_output t2.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = (Ndarray.mul grad_output t1.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
         accumulate_grad t2 grad_t2;
     );
   t
@@ -209,11 +227,13 @@ let mul t1 t2 =
         let grad_output = t.grad in
         if t1.requires_grad then
           let grad_t1 = (Ndarray.div grad_output t2.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
+          Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
           accumulate_grad t1 grad_t1;
         if t2.requires_grad then
           let numerator = Ndarray.mul grad_output t1.data in
           let denominator = Ndarray.mul t2.data t2.data in
           let grad_t2 = (Ndarray.div numerator denominator |> Ndarray.negate |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
+          Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
           accumulate_grad t2 grad_t2;
       );
     t
@@ -236,10 +256,12 @@ let matmul t1 t2 =
       if t1.requires_grad then
         let grad_t1 = (Ndarray.matmul grad_output (Ndarray.transpose t2.data)
                       |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1); 
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = (Ndarray.matmul (Ndarray.transpose t1.data) grad_output
                       |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
         accumulate_grad t2 grad_t2;
     );
   t
@@ -258,6 +280,7 @@ let matmul t1 t2 =
       t_new.backward_fn <- Some (fun () ->
         let grad_output = t_new.grad in
         let grad_t = Ndarray.transpose grad_output in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_t);
         accumulate_grad t grad_t;
       );
     t_new
@@ -272,6 +295,7 @@ let reshape t ~shape =
     res.backward_fn <- Some (fun () ->
       let grad_output = res.grad in
       let grad_t = Ndarray.reshape grad_output (Ndarray.shape t.data) in
+      Printf.printf "[%s]\n" (Ndarray.to_string grad_t);
       accumulate_grad t grad_t;
     );
   res
@@ -302,13 +326,15 @@ let sum ?dim t =
   if requires_grad then
     t_new.backward_fn <- Some (fun () ->
       let grad_output = t_new.grad in
+      (Ndarray.print_shape grad_output.shape);
+      (Ndarray.print_shape t.grad.shape);
       let grad_input = match dim with
-        | Some d -> Ndarray.expand_dims grad_output (Ndarray.dim t.data)
+        | Some d -> Ndarray.expand_dims grad_output d
         | None -> not_implemented "sum"
       in
+      Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
       accumulate_grad t grad_input;
-    );
-  t_new
+    );  t_new
 
   let mean ?dim t =
     let data = match dim with
@@ -323,19 +349,22 @@ let sum ?dim t =
       backward_fn = None;
       prev = [t];
     } in
+    Ndarray.print_shape t_new.grad.shape;
     if requires_grad then
       t_new.backward_fn <- Some (fun () ->
         let grad_output = t_new.grad in
+        (Ndarray.print_shape grad_output.shape);
         let num_elements = match dim with
           | Some d -> float_of_int (Ndarray.shape t.data).(d)
           | None -> float_of_int (Ndarray.numel (Ndarray.shape t.data))
         in
         let grad_input = match dim with
-          | Some d -> Ndarray.expand_dims grad_output (Ndarray.dim t.data)
+          | Some d -> Ndarray.expand_dims grad_output d
           | None -> not_implemented "mean" 
         in
         let grad_single = (Ndarray.create_float num_elements) in
-        let grad_input = Ndarray.div grad_input (Ndarray.expand_dims grad_single 1) in
+        let grad_input = Ndarray.div grad_input grad_single in
+        Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
         accumulate_grad t grad_input;
       );
     t_new
@@ -426,10 +455,13 @@ let neg t =
     backward_fn = None;
     prev = [t];
   } in
+  Ndarray.print_shape t_new.grad.shape;
   if requires_grad then
     t_new.backward_fn <- Some (fun () ->
       let grad_output = t_new.grad in
+      (Ndarray.print_shape grad_output.shape);
       let grad_input = Ndarray.negate grad_output in
+      Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
       accumulate_grad t grad_input;
     );
   t_new
@@ -442,7 +474,9 @@ let relu t =
   let res = create ~data ~requires_grad ~prev in
   res.backward_fn <- Some (fun () ->
     let grad_output = res.grad in
-    let grad_input = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) grad_output in
+    let mask = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) t.data in
+    let grad_input = Ndarray.mul grad_output mask in
+    Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
     accumulate_grad t grad_input);
   res
 
@@ -469,7 +503,7 @@ let relu t =
            dSoftmax = Softmax * (grad_output - sum(grad_output * Softmax))
         *)
         let sum_grad = Ndarray.dsum (Ndarray.mul grad_output t_new.data) (Ndarray.dim t.data - 1) in
-        let grad_input = Ndarray.mul t_new.data (Ndarray.sub grad_output sum_grad) in
+        let grad_input = Ndarray.mul t_new.data (Ndarray.sub grad_output (Ndarray.expand_dims sum_grad (Ndarray.dim sum_grad))) in
         accumulate_grad t grad_input;
       );
     t_new
@@ -495,7 +529,8 @@ let relu t =
         (* Gradient of log_softmax is grad_output - exp(log_probs) * sum(grad_output) *)
         let softmax_probs = Ndarray.exp t_new.data in
         let sum_grad = Ndarray.dsum (Ndarray.mul grad_output softmax_probs) (Ndarray.dim t.data - 1) in
-        let grad_input = Ndarray.sub grad_output (Ndarray.mul softmax_probs sum_grad) in
+        Ndarray.print_shape sum_grad.shape;
+        let grad_input = Ndarray.sub grad_output (Ndarray.mul softmax_probs (Ndarray.expand_dims sum_grad (Ndarray.dim sum_grad))) in
         accumulate_grad t grad_input;
       );
     t_new

@@ -1,1 +1,6 @@
 # OCaML
+Currently, for the low-level `Ndarray` module, we have completed the implementation and testing of most functions. For the `Tensor` module, we have implemented and tested several key functions, especially those required for building a simple MLP network. For the `Optimizer` module, we have implemented the basic SGD optimizer. For the `Model` module, we have implemented functionalities related to linear layers, ReLU activation functions, cross-entropy loss, and model construction using `create_Sequential`. Additionally, we have implemented the gradient backpropagation functionality in the `Until` module.
+
+For the `Dataset` and `Dataloader` modules, we have completed the implementation of basic features such as creating datasets and loading data in batches. In `main.ml`, we demonstrate the process of constructing a simple MLP network with one hidden layer and performing forward and backward propagation using randomly generated input data.
+
+As for future plans, we will continue to work on the implementation and testing of the `Tensor`, `Model`, `Dataset`, `Dataloader`, `Optimizer`, and `Transform` modules. This includes adding convolution operations, loading real datasets, performing data augmentation, and implementing more complex optimizers such as Adam.

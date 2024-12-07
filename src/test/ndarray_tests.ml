@@ -6,13 +6,13 @@ open Ndarray
 (* 辅助函数打印形状 *)
 let print_shape shape =
   Printf.printf "[%s]\n"
-    (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
+    (String.concat "; " (Array.to_list (Array.map string_of_int shape)))
 ;;
 
 (* 辅助函数打印数据 *)
 let print_data data =
   Printf.printf "[%s]\n"
-    (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_float data)))
+    (String.concat "; " (Array.to_list (Array.map string_of_float data)))
 ;;
 
 (* 简单的断言函数用于浮点数 *)
@@ -64,6 +64,75 @@ let assert_equal_int_array expected actual test_name =
       let actual_str = String.concat "; " (Array.to_list (Array.map string_of_int actual)) in
       Printf.printf "Failed: %s (expected [%s], got [%s])\n" test_name expected_str actual_str
 ;;
+
+(* Test the set function *)
+let test_set () =
+  Printf.printf "Testing set function...\n";
+
+  (* 初始化一个 2x3 的 ndarray *)
+  let data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] in
+  let shape = [|2; 3|] in
+  let t = create data shape in
+
+  (* 更新某些元素 *)
+  let idx1 = [|0; 1|] in
+  let idx2 = [|1; 2|] in
+  let idx3 = [|0; 0|] in
+
+  set t idx1 10.0;  (* 更新位置 [0, 1] 的值为 10.0 *)
+  Printf.printf "Finish 1";
+  set t idx2 20.0;  (* 更新位置 [1, 2] 的值为 20.0 *)
+  Printf.printf "Finish 2";
+  set t idx3 30.0;  (* 更新位置 [0, 0] 的值为 30.0 *)
+  Printf.printf "Finish 3";
+
+  (* 检查更新后的数据 *)
+  let expected_data = [|30.0; 10.0; 3.0; 4.0; 5.0; 20.0|] in
+
+  Printf.printf "Updated ndarray data: ";
+  print_data t.data;
+
+  (* 验证结果 *)
+  assert_equal_float_array expected_data t.data "Set Function Data";
+  Printf.printf "Passed: Set Function Data\n";
+
+  (* 验证形状保持不变 *)
+  assert_equal_int_array shape t.shape "Set Function Shape";
+  Printf.printf "Passed: Set Function Shape\n";
+;;
+
+(* Test the at function *)
+(* let test_at () =
+  Printf.printf "Testing at function...\n";
+
+  (* 初始化一个 3x2x4 的 ndarray *)
+  let data = [|
+    1.0; 2.0; 3.0; 4.0;
+    5.0; 6.0; 7.0; 8.0;
+    9.0; 10.0; 11.0; 12.0;
+
+    13.0; 14.0; 15.0; 16.0;
+    17.0; 18.0; 19.0; 20.0;
+    21.0; 22.0; 23.0; 24.0
+  |] in
+  let shape = [|3; 2; 4|] in
+  let arr = create data shape in
+
+  (* 测试案例 1：访问第一个元素 *)
+  let indices1 = [|0; 0; 0|] in
+  let value1 = at arr indices1 in
+  assert_equal_float 1.0 value1 "At Function - Case 1";
+
+  (* 测试案例 2：访问中间的一个元素 *)
+  let indices2 = [|1; 0; 3|] in
+  let value2 = at arr indices2 in
+  assert_equal_float 16.0 value2 "At Function - Case 2";
+
+  (* 测试案例 3：访问最后一个元素 *)
+  let indices3 = [|2; 1; 3|] in
+  let value3 = at arr indices3 in
+  assert_equal_float 24.0 value3 "At Function - Case 3";
+;; *)
 
 (* 测试 add 函数 *)
 let test_add () =
@@ -937,6 +1006,9 @@ let test_squeeze () =
 
 (* 主测试函数 *)
 let () =
+  Printf.printf "Start Test!";
+  test_set();
+  (* test_at (); *)
   test_add ();
   test_sum_multiplied ();
   test_matmul();

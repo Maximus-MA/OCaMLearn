@@ -6,6 +6,11 @@ let print_shape shape =
     (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
 ;;
 
+(* let print_data data =
+  Printf.printf "[%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_float data)))
+;; *)
+
 type t = {
   data: float array;
   shape: int array;
@@ -118,8 +123,8 @@ let add a b =
 
 (* 广播减法 *)
 let sub a b =
-  print_shape a.shape;
-  print_shape b.shape;
+  (* print_shape a.shape; *)
+  (* print_shape b.shape; *)
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
   let shape = broadcast_shape a.shape b.shape in
@@ -167,6 +172,8 @@ let sub a b =
 
 (* 广播乘法 *)
 let mul a b =
+  (* print_shape a.shape; *)
+  (* print_shape b.shape; *)
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
   let shape = broadcast_shape a.shape b.shape in
@@ -263,8 +270,8 @@ let div a b =
 let matmul a b =
     let a_shape = a.shape in
     let b_shape = b.shape in
-    print_shape a_shape;
-    print_shape b_shape;
+    (* print_shape a_shape; *)
+    (* print_shape b_shape; *)
     let a_dim = Array.length a_shape in
     let b_dim = Array.length b_shape in
   
@@ -379,6 +386,9 @@ let create (data: float array) (shape: int array) : t =
   else
     { data; shape }
 
+let scaler (data: float) = 
+  create [|data|] [||]
+
 let create_float (data: float) = 
   create [|data|] [|1|]
 
@@ -395,10 +405,15 @@ let ones (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   { data = Array.make size 1.0; shape }
 
+let arange stop : t=
+  let n = int_of_float stop in
+  let data = Array.init n (fun i -> float_of_int i) in
+  { data; shape = [|n|] }
+
 (* 生成随机值的ndarray *)
 let rand (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
-  let data = Array.init size (fun _ -> Random.float 1.0) in
+  let data = Array.init size (fun _ -> (Random.float 2.0) -. 1.0) in
   { data; shape }
 
 (* Xavier 初始化 *)
@@ -424,17 +439,35 @@ let dim (arr: t) : int =
   Array.length arr.shape
 
 (* 获取ndarray指定位置的值 *)
-let at (arr: t) (indices: int array) : float =
-  let strides = Array.make (Array.length arr.shape) 1 in
-  for i = Array.length arr.shape - 2 downto 0 do
-    strides.(i) <- strides.(i + 1) * arr.shape.(i + 1)
-  done;
-  let index = ref 0 in
-  for i = 0 to Array.length indices - 1 do
-    index := !index + indices.(i) * strides.(i)
-  done;
-  arr.data.(!index)
+let at arr indices =
+  let strides = strides arr.shape in
+  let dims = Array.length arr.shape in
+  let idx_len = Array.length indices in
+
+  (* 检查索引长度是否匹配 *)
+  if idx_len <> dims then
+    failwith (Printf.sprintf "Index length %d does not match number of dimensions %d" idx_len dims)
+  else
+    (* 检查每个索引是否在有效范围内 *)
+    let valid = ref true in
+    for i = 0 to dims - 1 do
+      if indices.(i) < 0 || indices.(i) >= arr.shape.(i) then
+        valid := false
+    done;
+    if not !valid then
+      failwith "Index out of bounds"
+    else
+      (* 计算 flat_index *)
+      let flat_index =
+        Array.fold_left (fun acc (i, stride) -> acc + i * stride) 0 (Array.combine indices strides)
+      in
+      (* 检查 flat_index 是否在 data 范围内 *)
+      if flat_index >= Array.length arr.data || flat_index < 0 then
+        failwith "Flat index out of bounds"
+      else
+        arr.data.(flat_index)
 ;;
+
 
 (* reshape 函数 *)
 let reshape (arr: t) (new_shape: int array) : t =
@@ -450,13 +483,35 @@ let reshape (arr: t) (new_shape: int array) : t =
 (* ------------------------------------------------------------------------------------------- *)
 
 (* Updates the element at a specified index in the ndarray *)
+(* 更新 ndarray 中指定索引的元素 *)
 let set t idx value =
-  (* Calculate the flat index from multidimensional indices *)
-  let flat_index = 
-    Array.fold_left (fun (acc, stride) i -> (acc + i * stride, stride * t.shape.(i))) (0, 1) idx
-    |> fst 
-  in
-  t.data.(flat_index) <- value
+  let strides = strides t.shape in
+  let dims = Array.length t.shape in
+  let idx_len = Array.length idx in
+
+  (* 检查索引长度是否匹配 *)
+  if idx_len <> dims then
+    failwith (Printf.sprintf "Index length %d does not match number of dimensions %d" idx_len dims)
+  else
+    (* 检查每个索引是否在有效范围内 *)
+    let valid = ref true in
+    for i = 0 to dims - 1 do
+      if idx.(i) < 0 || idx.(i) >= t.shape.(i) then
+        valid := false
+    done;
+    if not !valid then
+      failwith "Index out of bounds"
+    else
+      (* 计算 flat_index *)
+      let flat_index =
+        Array.fold_left (fun acc (i, stride) -> acc + i * stride) 0 (Array.combine idx strides)
+      in
+      (* 检查 flat_index 是否在 data 范围内 *)
+      if flat_index >= Array.length t.data || flat_index < 0 then
+        failwith "Flat index out of bounds"
+      else
+        t.data.(flat_index) <- value
+;;
 
 (* Returns the transpose of a 2D ndarray *)
 let transpose t =
@@ -631,9 +686,10 @@ let dsum t dim =
 let dmean t dim =
   let shape = t.shape in
   let ndim = Array.length shape in
-  print_shape t.shape;
+  (* print_shape t.shape; *)
   if dim < 0 || dim >= ndim then failwith "Dimension out of range";
   let new_shape = Array.init (ndim - 1) (fun i -> if i < dim then shape.(i) else shape.(i + 1)) in
+  (* print_shape new_shape; *)
   let num_new_elements = Array.fold_left ( * ) 1 new_shape in
   let result_data = Array.make num_new_elements 0.0 in
   let count = float_of_int shape.(dim) in
@@ -874,7 +930,7 @@ let map (arr: t) ~f :t=
   {data= Array.map f arr.data; shape= arr.shape}
 
 (* Reduction functions *)
-let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
+(* let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
   let arr_shape = arr.shape in
   print_shape arr.shape;
   print_shape target_shape;
@@ -883,10 +939,48 @@ let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
   let axes_to_reduce = List.filter_map (fun (i, (dim_arr, dim_target)) ->
     if dim_arr <> dim_target then Some i else None
   ) (List.mapi (fun i dims -> (i, dims)) (Array.to_list (Array.combine arr_shape target_shape))) in
-  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce
+  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce *)
 
   let negate arr =
     { data = Array.map (fun x -> -.x) arr.data; shape = arr.shape }
+
+  (* Helper function to prepend ones to a shape array to match ranks *)
+let pad_shape_to arr_shape target_shape =
+  let arr_ndim = Array.length arr_shape in
+  let tgt_ndim = Array.length target_shape in
+  if arr_ndim = tgt_ndim then
+    arr_shape, target_shape
+  else if arr_ndim > tgt_ndim then
+    (* Prepend ones to target_shape *)
+    let padded = Array.init arr_ndim (fun i ->
+      if i < (arr_ndim - tgt_ndim) then 1 else target_shape.(i - (arr_ndim - tgt_ndim))
+    ) in
+    arr_shape, padded
+  else
+    failwith "reduce_sum_to_shape: target shape cannot have more dimensions than arr"
+
+let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
+  let arr_shape = shape arr in
+  (* If shapes differ in length, pad the shorter one with ones *)
+  let arr_shape, tgt_shape = pad_shape_to arr_shape target_shape in
+
+  if Array.length arr_shape <> Array.length tgt_shape then
+    failwith "Shapes must match in number of dimensions after padding for reduce_sum_to_shape";
+
+  (* Identify which axes need to be reduced *)
+  let axes_to_reduce = 
+    Array.to_list (Array.mapi (fun i (arr_dim, tgt_dim) ->
+      if arr_dim <> tgt_dim then Some i else None
+    ) (Array.combine arr_shape tgt_shape))
+    |> List.filter_map (fun x -> x)
+  in
+
+  (* We should reduce from the largest axis to smallest axis to avoid index shifting issues *)
+  let axes_to_reduce = List.rev (List.sort compare axes_to_reduce) in
+
+  (* Perform the reductions *)
+  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce
+
 
 
 
