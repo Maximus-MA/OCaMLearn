@@ -1,3 +1,4 @@
 (executable
  (name main)
+ (modules main)
  (libraries core ndarray tensor model optimizer dataset dataloader utils transform))
