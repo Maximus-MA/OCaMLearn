@@ -8,6 +8,7 @@ let () =
     Model.create_Linear ~in_features:50 ~out_features:10 ~bias:true;
   ] in 
   let output = Model.forward model [input] in
+  Printf.printf "Input: %s\n" (Tensor.to_string input);
   Printf.printf "Output: %s\n" (Tensor.to_string output);
   let loss_func = Model.create_CrossEntropy () in
   let target = Tensor.rand [|2; 10|] in
