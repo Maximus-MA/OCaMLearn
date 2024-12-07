@@ -1,21 +1,21 @@
 (* test/tests.ml *)
 
-(* 引入待测试的模块 *)
+(* Import the module to be tested *)
 open Ndarray
 
-(* 辅助函数打印形状 *)
+(* Helper function to print the shape *)
 let print_shape shape =
   Printf.printf "[%s]\n"
     (String.concat "; " (Array.to_list (Array.map string_of_int shape)))
 ;;
 
-(* 辅助函数打印数据 *)
+(* Helper function to print the data *)
 let print_data data =
   Printf.printf "[%s]\n"
     (String.concat "; " (Array.to_list (Array.map string_of_float data)))
 ;;
 
-(* 简单的断言函数用于浮点数 *)
+(* Simple assertion function for floating-point numbers *)
 let assert_equal_float expected actual test_name =
   if expected = actual then
     Printf.printf "Passed: %s\n" test_name
@@ -23,7 +23,7 @@ let assert_equal_float expected actual test_name =
     Printf.printf "Failed: %s (expected %f, got %f)\n" test_name expected actual
 ;;
 
-(* 简单的断言函数用于浮点数组 *)
+(* Simple assertion function for floating-point arrays *)
 let assert_equal_float_array (expected : float array) (actual : float array) test_name =
   let len_expected = Array.length expected in
   let len_actual = Array.length actual in
@@ -45,7 +45,7 @@ let assert_equal_float_array (expected : float array) (actual : float array) tes
       Printf.printf "Failed: %s (expected [%s], got [%s])\n" test_name expected_str actual_str
 ;;
 
-(* 简单的断言函数用于整数数组 *)
+(* Simple assertion function for integer arrays *)
 let assert_equal_int_array expected actual test_name =
   let len_expected = Array.length expected in
   let len_actual = Array.length actual in
@@ -69,34 +69,34 @@ let assert_equal_int_array expected actual test_name =
 let test_set () =
   Printf.printf "Testing set function...\n";
 
-  (* 初始化一个 2x3 的 ndarray *)
+  (* Initialize a 2x3 ndarray *)
   let data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] in
   let shape = [|2; 3|] in
   let t = create data shape in
 
-  (* 更新某些元素 *)
+  (* Update some elements *)
   let idx1 = [|0; 1|] in
   let idx2 = [|1; 2|] in
   let idx3 = [|0; 0|] in
 
-  set t idx1 10.0;  (* 更新位置 [0, 1] 的值为 10.0 *)
+  set t idx1 10.0;  (* Update value at position [0, 1] to 10.0 *)
   Printf.printf "Finish 1";
-  set t idx2 20.0;  (* 更新位置 [1, 2] 的值为 20.0 *)
+  set t idx2 20.0;  (* Update value at position [1, 2] to 20.0 *)
   Printf.printf "Finish 2";
-  set t idx3 30.0;  (* 更新位置 [0, 0] 的值为 30.0 *)
+  set t idx3 30.0;  (* Update value at position [0, 0] to 30.0 *)
   Printf.printf "Finish 3";
 
-  (* 检查更新后的数据 *)
+  (* Check updated data *)
   let expected_data = [|30.0; 10.0; 3.0; 4.0; 5.0; 20.0|] in
 
   Printf.printf "Updated ndarray data: ";
   print_data t.data;
 
-  (* 验证结果 *)
+  (* Verify the result *)
   assert_equal_float_array expected_data t.data "Set Function Data";
   Printf.printf "Passed: Set Function Data\n";
 
-  (* 验证形状保持不变 *)
+  (* Verify shape remains unchanged *)
   assert_equal_int_array shape t.shape "Set Function Shape";
   Printf.printf "Passed: Set Function Shape\n";
 ;;
@@ -105,7 +105,7 @@ let test_set () =
 let test_at () =
   Printf.printf "Testing at function...\n";
 
-  (* 初始化一个 3x2x4 的 ndarray *)
+  (* Initialize a 3x2x4 ndarray *)
   let data = [|
     1.0; 2.0; 3.0; 4.0;
     5.0; 6.0; 7.0; 8.0;
@@ -118,72 +118,72 @@ let test_at () =
   let shape = [|3; 2; 4|] in
   let arr = create data shape in
 
-  (* 测试案例 1：访问第一个元素 *)
+  (* Test Case 1: Access the first element *)
   let indices1 = [|0; 0; 0|] in
   let value1 = at arr indices1 in
   assert_equal_float 1.0 value1 "At Function - Case 1";
 
-  (* 测试案例 2：访问中间的一个元素 *)
+  (* Test Case 2: Access a middle element *)
   let indices2 = [|1; 0; 3|] in
   let value2 = at arr indices2 in
   assert_equal_float 12.0 value2 "At Function - Case 2";
 
-  (* 测试案例 3：访问最后一个元素 *)
+  (* Test Case 3: Access the last element *)
   let indices3 = [|2; 1; 3|] in
   let value3 = at arr indices3 in
   assert_equal_float 24.0 value3 "At Function - Case 3";
 ;;
 
-(* 测试 add 函数 *)
+(* Test the add function *)
 let test_add () =
   Printf.printf "Testing add function...\n";
 
-  (* 测试案例 1：标量和向量相加 *)
+  (* Test Case 1: Add scalar and vector *)
   let a = create [|2.0|] [|1|] in
   let b = create [|1.0; 2.0; 3.0|] [|3|] in
   let c = add a b in
-  Printf.printf "测试案例 1 - 结果形状: ";
+  Printf.printf "T 1 - R: ";
   print_shape c.shape;
-  Printf.printf "测试案例 1 - 结果数据: ";
+  Printf.printf "Test C 1 - Result data: ";
   print_data c.data;
   let expected_shape = [|3|] in
   let expected_data = [|3.0; 4.0; 5.0|] in
   assert_equal_float_array expected_data c.data "Add Scalar + Vector";
   assert_equal_int_array expected_shape c.shape "Add Scalar + Vector Shape";
 
-  (* 测试案例 2：矩阵和向量相加 *)
+  (* Test Case 2: Add matrix and vector *)
   let a = create [|1.0; 2.0; 3.0; 4.0|] [|2; 2|] in
   let b = create [|10.0; 20.0|] [|2|] in
   let c = add a b in
-  Printf.printf "测试案例 2 - 结果形状: ";
+  Printf.printf "Test Case 2 - Result : ";
   print_shape c.shape;
-  Printf.printf "测试案例 2 - 结果数据: ";
+  Printf.printf "Test Case 2 - Result data: ";
   print_data c.data;
   let expected_shape2 = [|2; 2|] in
   let expected_data2 = [|11.0; 22.0; 13.0; 24.0|] in
   assert_equal_float_array expected_data2 c.data "Add Matrix + Vector";
   assert_equal_int_array expected_shape2 c.shape "Add Matrix + Vector Shape";
 
-  (* 测试案例 3：矩阵和标量相加 *)
+  (* Test Case 3: Add matrix and scalar *)
   let a = create [|1.0; 2.0; 3.0; 4.0|] [|2; 2|] in
   let b = create [|5.0|] [|1|] in
   let c = add a b in
-  Printf.printf "测试案例 3 - 结果形状: ";
+  Printf.printf "Test Case 3 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 3 - 结果数据: ";
+  Printf.printf "Test Case 3 - Result data: ";
   print_data c.data;
   let expected_shape3 = [|2; 2|] in
   let expected_data3 = [|6.0; 7.0; 8.0; 9.0|] in
   assert_equal_float_array expected_data3 c.data "Add Matrix + Scalar";
   assert_equal_int_array expected_shape3 c.shape "Add Matrix + Scalar Shape";
 
-  (* 测试案例 4：矩阵和矩阵相加 *)
+  (* Test Case 4: Add matrix and matrix *)
   let a = create [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] [|2; 1; 3|] in
   let b = create [|10.0; 20.0; 30.0; 40.0|] [|1; 4; 1|] in
   let c = add a b in
-  Printf.printf "测试案例 4 - 结果形状: ";
+  Printf.printf "Test Case 4 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 4 - 结果数据: ";
+  Printf.printf "Test Case 4 - Result data: ";
   print_data c.data;
   let expected_shape3 = [|2; 4; 3|] in
   let expected_data3 = [|
@@ -200,56 +200,56 @@ let test_add () =
   assert_equal_int_array expected_shape3 c.shape "Add Matrix + Matrix Shape";
 ;;
 
-(* 测试 sub 函数 *)
+(* Test the sub function *)
 let test_sub () =
   Printf.printf "Testing sub function...\n";
 
-  (* 测试案例 1：标量和向量相减 *)
+  (* Test Case 1: Scalar minus vector *)
   let a = { data = [|5.0|]; shape = [|1|] } in
   let b = { data = [|1.0; 2.0; 3.0|]; shape = [|3|] } in
   let c = sub a b in
-  Printf.printf "测试案例 1 - 结果形状: ";
+  Printf.printf "Test Case 1 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 1 - 结果数据: ";
+  Printf.printf "Test Case 1 - Result data: ";
   print_data c.data;
   let expected_shape = [|3|] in
   let expected_data = [|4.0; 3.0; 2.0|] in
   assert_equal_float_array expected_data c.data "Sub Scalar - Vector";
   assert_equal_int_array expected_shape c.shape "Sub Scalar - Vector Shape";
 
-  (* 测试案例 2：矩阵和向量相减 *)
+  (* Test Case 2: Matrix minus vector *)
   let a = { data = [|5.0; 6.0; 7.0; 8.0|]; shape = [|2; 2|] } in
   let b = { data = [|1.0; 2.0|]; shape = [|2|] } in
   let c = sub a b in
-  Printf.printf "测试案例 2 - 结果形状: ";
+  Printf.printf "Test Case 2 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 2 - 结果数据: ";
+  Printf.printf "Test Case 2 - Result data: ";
   print_data c.data;
   let expected_shape2 = [|2; 2|] in
   let expected_data2 = [|4.0; 4.0; 6.0; 6.0|] in
   assert_equal_float_array expected_data2 c.data "Sub Matrix - Vector";
   assert_equal_int_array expected_shape2 c.shape "Sub Matrix - Vector Shape";
 
-  (* 测试案例 3：矩阵和标量相减 *)
+  (* Test Case 3: Matrix minus scalar *)
   let a = { data = [|5.0; 6.0; 7.0; 8.0|]; shape = [|2; 2|] } in
   let b = { data = [|3.0|]; shape = [|1|] } in
   let c = sub a b in
-  Printf.printf "测试案例 3 - 结果形状: ";
+  Printf.printf "Test Case 3 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 3 - 结果数据: ";
+  Printf.printf "Test Case 3 - Result data: ";
   print_data c.data;
   let expected_shape3 = [|2; 2|] in
   let expected_data3 = [|2.0; 3.0; 4.0; 5.0|] in
   assert_equal_float_array expected_data3 c.data "Sub Matrix - Scalar";
   assert_equal_int_array expected_shape3 c.shape "Sub Matrix - Scalar Shape";
 
-  (* 测试案例 4：矩阵和矩阵相减 *)
+  (* Test Case 4: Matrix minus matrix *)
   let a = { data = [|5.0; 6.0; 7.0; 8.0; 9.0; 10.0|]; shape = [|2; 1; 3|] } in
   let b = { data = [|2.0; 3.0; 4.0; 5.0|]; shape = [|1; 4; 1|] } in
   let c = sub a b in
-  Printf.printf "测试案例 4 - 结果形状: ";
+  Printf.printf "Test Case 4 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 4 - 结果数据: ";
+  Printf.printf "Test Case 4 - Result data: ";
   print_data c.data;
   let expected_shape4 = [|2; 4; 3|] in
   let expected_data4 = [|
@@ -267,56 +267,56 @@ let test_sub () =
 
 ;;
 
-(* 测试 mul 函数 *)
+(* Test the mul function *)
 let test_mul () =
   Printf.printf "Testing mul function...\n";
 
-  (* 测试案例 1：标量和向量相乘 *)
+  (* Test Case 1: Scalar multiplied by vector *)
   let a = { data = [|2.0|]; shape = [|1|] } in
   let b = { data = [|1.0; 2.0; 3.0|]; shape = [|3|] } in
   let c = mul a b in
-  Printf.printf "测试案例 1 - 结果形状: ";
+  Printf.printf "Test Case 1 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 1 - 结果数据: ";
+  Printf.printf "Test Case 1 - Result data: ";
   print_data c.data;
   let expected_shape = [|3|] in
   let expected_data = [|2.0; 4.0; 6.0|] in
   assert_equal_float_array expected_data c.data "Mul Scalar * Vector";
   assert_equal_int_array expected_shape c.shape "Mul Scalar * Vector Shape";
 
-  (* 测试案例 2：矩阵和向量相乘 *)
+  (* Test Case 2: Matrix multiplied by vector *)
   let a = { data = [|1.0; 2.0; 3.0; 4.0|]; shape = [|2; 2|] } in
   let b = { data = [|10.0; 20.0|]; shape = [|2|] } in
   let c = mul a b in
-  Printf.printf "测试案例 2 - 结果形状: ";
+  Printf.printf "Test Case 2 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 2 - 结果数据: ";
+  Printf.printf "Test Case 2 - Result data: ";
   print_data c.data;
   let expected_shape2 = [|2; 2|] in
   let expected_data2 = [|10.0; 40.0; 30.0; 80.0|] in
   assert_equal_float_array expected_data2 c.data "Mul Matrix * Vector";
   assert_equal_int_array expected_shape2 c.shape "Mul Matrix * Vector Shape";
 
-  (* 测试案例 3：矩阵和标量相乘 *)
+  (* Test Case 3: Matrix multiplied by scalar *)
   let a = { data = [|1.0; 2.0; 3.0; 4.0|]; shape = [|2; 2|] } in
   let b = { data = [|5.0|]; shape = [|1|] } in
   let c = mul a b in
-  Printf.printf "测试案例 3 - 结果形状: ";
+  Printf.printf "Test Case 3 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 3 - 结果数据: ";
+  Printf.printf "Test Case 3 - Result data: ";
   print_data c.data;
   let expected_shape3 = [|2; 2|] in
   let expected_data3 = [|5.0; 10.0; 15.0; 20.0|] in
   assert_equal_float_array expected_data3 c.data "Mul Matrix * Scalar";
   assert_equal_int_array expected_shape3 c.shape "Mul Matrix * Scalar Shape";
 
-  (* 测试案例 4：矩阵和矩阵相乘 *)
+  (* Test Case 4: Matrix multiplied by matrix *)
   let a = { data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|]; shape = [|2; 1; 3|] } in
   let b = { data = [|2.0; 3.0; 4.0; 5.0|]; shape = [|1; 4; 1|] } in
   let c = mul a b in
-  Printf.printf "测试案例 4 - 结果形状: ";
+  Printf.printf "Test Case 4 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 4 - 结果数据: ";
+  Printf.printf "Test Case 4 - Result data: ";
   print_data c.data;
   let expected_shape4 = [|2; 4; 3|] in
   let expected_data4 = [|
@@ -334,56 +334,56 @@ let test_mul () =
 
 ;;
 
-(* 测试 div 函数 *)
+(* Test the div function *)
 let test_div () =
   Printf.printf "Testing div function...\n";
 
-  (* 测试案例 1：标量和向量相除 *)
+  (* Test Case 1: Scalar divided by vector *)
   let a = { data = [|10.0|]; shape = [|1|] } in
   let b = { data = [|2.0; 5.0; 10.0|]; shape = [|3|] } in
   let c = div a b in
-  Printf.printf "测试案例 1 - 结果形状: ";
+  Printf.printf "Test Case 1 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 1 - 结果数据: ";
+  Printf.printf "Test Case 1 - Result data: ";
   print_data c.data;
   let expected_shape = [|3|] in
   let expected_data = [|5.0; 2.0; 1.0|] in
   assert_equal_float_array expected_data c.data "Div Scalar / Vector";
   assert_equal_int_array expected_shape c.shape "Div Scalar / Vector Shape";
 
-  (* 测试案例 2：矩阵和向量相除 *)
+  (* Test Case 2: Matrix divided by vector *)
   let a = { data = [|10.0; 20.0; 30.0; 40.0|]; shape = [|2; 2|] } in
   let b = { data = [|2.0; 5.0|]; shape = [|2|] } in
   let c = div a b in
-  Printf.printf "测试案例 2 - 结果形状: ";
+  Printf.printf "Test Case 2 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 2 - 结果数据: ";
+  Printf.printf "Test Case 2 - Result data: ";
   print_data c.data;
   let expected_shape2 = [|2; 2|] in
   let expected_data2 = [|5.0; 4.0; 15.0; 8.0|] in
   assert_equal_float_array expected_data2 c.data "Div Matrix / Vector";
   assert_equal_int_array expected_shape2 c.shape "Div Matrix / Vector Shape";
 
-  (* 测试案例 3：矩阵和标量相除 *)
+  (* Test Case 3: Matrix divided by scalar *)
   let a = { data = [|10.0; 20.0; 30.0; 40.0|]; shape = [|2; 2|] } in
   let b = { data = [|2.0|]; shape = [|1|] } in
   let c = div a b in
-  Printf.printf "测试案例 3 - 结果形状: ";
+  Printf.printf "Test Case 3 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 3 - 结果数据: ";
+  Printf.printf "Test Case 3 - Result data: ";
   print_data c.data;
   let expected_shape3 = [|2; 2|] in
   let expected_data3 = [|5.0; 10.0; 15.0; 20.0|] in
   assert_equal_float_array expected_data3 c.data "Div Matrix / Scalar";
   assert_equal_int_array expected_shape3 c.shape "Div Matrix / Scalar Shape";
 
-  (* 测试案例 4：矩阵和矩阵相除 *)
+  (* Test Case 4: Matrix divided by matrix *)
   let a = { data = [|10.0; 20.0; 30.0; 40.0; 50.0; 60.0|]; shape = [|2; 1; 3|] } in
   let b = { data = [|2.0; 4.0; 5.0; 6.0|]; shape = [|1; 4; 1|] } in
   let c = div a b in
-  Printf.printf "测试案例 4 - 结果形状: ";
+  Printf.printf "Test Case 4 - Result shape: ";
   print_shape c.shape;
-  Printf.printf "测试案例 4 - 结果数据: ";
+  Printf.printf "Test Case 4 - Result data: ";
   print_data c.data;
   let expected_shape4 = [|2; 4; 3|] in
   let expected_data4 = [|
@@ -401,25 +401,25 @@ let test_div () =
 
 ;;
 
-(* 测试 sum_multiplied 函数 *)
+(* Test the sum_multiplied function *)
 let test_sum_multiplied () =
   Printf.printf "Testing sum_multiplied function...\n";
 
-  (* 测试案例 1 *)
+  (* Test Case 1 *)
   let a = [|1.0; 2.0; 3.0|] in
   let b = [|4.0; 5.0; 6.0|] in
   let expected = 32.0 in  (* 1*4 + 2*5 + 3*6 = 4 + 10 + 18 = 32 *)
   let result = sum_multiplied a b in
   assert_equal_float expected result "sum_multiplied [1.0; 2.0; 3.0] * [4.0; 5.0; 6.0]";
 
-  (* 测试案例 2 *)
+  (* Test Case 2 *)
   let a = [|0.0; 0.0; 0.0|] in
   let b = [|1.0; 2.0; 3.0|] in
   let expected2 = 0.0 in
   let result2 = sum_multiplied a b in
   assert_equal_float expected2 result2 "sum_multiplied [0.0; 0.0; 0.0] * [1.0; 2.0; 3.0]";
 
-  (* 测试案例 3 *)
+  (* Test Case 3 *)
   let a = [|1.5; 2.5; -3.0|] in
   let b = [|4.0; -2.0; 1.0|] in
   let expected3 = 1.5 *. 4.0 +. 2.5 *. (-2.0) +. (-3.0) *. 1.0 in  (* 6.0 -5.0 -3.0 = -2.0 *)
@@ -427,31 +427,31 @@ let test_sum_multiplied () =
   assert_equal_float expected3 result3 "sum_multiplied [1.5; 2.5; -3.0] * [4.0; -2.0; 1.0]";
 ;;
 
-(* 测试 matmul 函数 *)
+(* Test the matmul function *)
 let test_matmul () =
   Printf.printf "Testing matmul function...\n";
 
-  (* 定义矩阵 A，形状为 [batch_size; n] *)
+  (* Define matrix A, with shape [batch_size; n] *)
   let batch_size = 2 in  (* b *)
   let n = 3 in
-  let cnt = 2 in        (* cnt，用于表示矩阵 B 的数量 *)
+  let cnt = 2 in        (* cnt, used to represent the number of matrices B *)
   let k = 5 in
 
   let a_data = [|
-    1.0; 2.0; 3.0;    (* 第一个样本 *)
-    4.0; 5.0; 6.0     (* 第二个样本 *)
+    1.0; 2.0; 3.0;    (* First sample *)
+    4.0; 5.0; 6.0     (* Second sample *)
   |] in
   let a_shape = [|batch_size; n|] in
   let a_ndarray = { data = a_data; shape = a_shape } in
 
-  (* 定义矩阵 B，形状为 [cnt; n; k] *)
+  (* Define matrix B, with shape [cnt; n; k] *)
   let b_data = [|
-    (* 第一个矩阵，cnt = 0 *)
+    (* First matrix, cnt = 0 *)
     1.0; 2.0; 3.0; 4.0; 5.0;    (* n = 0 *)
     6.0; 7.0; 8.0; 9.0; 10.0;   (* n = 1 *)
     11.0;12.0;13.0;14.0;15.0;   (* n = 2 *)
 
-    (* 第二个矩阵，cnt = 1 *)
+    (* Second matrix, cnt = 1 *)
     2.0; 3.0; 4.0; 5.0; 6.0;    (* n = 0 *)
     7.0; 8.0; 9.0;10.0;11.0;    (* n = 1 *)
     12.0;13.0;14.0;15.0;16.0;   (* n = 2 *)
@@ -459,23 +459,23 @@ let test_matmul () =
   let b_shape = [|cnt; n; k|] in
   let b_ndarray = { data = b_data; shape = b_shape } in
 
-  (* 计算 A * B *)
+  (* Compute A * B *)
   let result = matmul a_ndarray b_ndarray in
 
-  (* 打印结果 *)
-  Printf.printf "矩阵 A 形状: ";
+  (* Print results *)
+  Printf.printf "Matrix A shape: ";
   print_shape a_ndarray.shape;
-  Printf.printf "矩阵 B 形状: ";
+  Printf.printf "Matrix B shape: ";
   print_shape b_ndarray.shape;
-  Printf.printf "结果矩阵形状: ";
+  Printf.printf "Result matrix shape: ";
   print_shape result.shape;
-  Printf.printf "结果矩阵数据: ";
+  Printf.printf "Result matrix data: ";
   print_data result.data; 
 
-  (* 预期的输出形状为 [batch_size; cnt; k] *)
+  (* Expected output shape is [batch_size; cnt; k] *)
   let expected_shape = [|batch_size; cnt; k|] in
 
-  (* 手动计算预期结果 *)
+  (* Manually compute expected results *)
   let expected_data = [|
     46.0; 52.0; 58.0; 64.0; 70.0;
     100.0;115.0;130.0;145.0;160.0;
@@ -483,13 +483,13 @@ let test_matmul () =
     115.0;130.0;145.0;160.0;175.0;
   |] in
 
-  Printf.printf "答案矩阵数据: ";
+  Printf.printf "Expected matrix data: ";
   print_data expected_data; 
   
-  (* 断言结果形状 *)
+  (* Assert Result shape *)
   assert_equal_int_array expected_shape result.shape "Matmul Result Shape";
 
-  (* 断言结果数据 *)
+  (* Assert Result data *)
   let epsilon = 1e-6 in
   let len = Array.length expected_data in
   let passed = ref true in
@@ -503,33 +503,33 @@ let test_matmul () =
     Printf.printf "Failed: Matmul Result Data\n"
 ;;
 
-(* 测试 zeros 和 ones *)
+(* Test zeros and ones functions *)
 let test_zeros_ones () =
   Printf.printf "Testing zeros and ones functions...\n";
 
-  (* 测试 zeros *)
+  (* Test zeros *)
   let shape = [|2; 3|] in
   let zeros_array = zeros shape in
-  Printf.printf "zeros - 结果形状: ";
+  Printf.printf "zeros - Result shape: ";
   print_shape zeros_array.shape;
-  Printf.printf "zeros - 结果数据: ";
+  Printf.printf "zeros - Result data: ";
   print_data zeros_array.data;
   let expected_data = [|0.0; 0.0; 0.0; 0.0; 0.0; 0.0|] in
   assert_equal_float_array expected_data zeros_array.data "Zeros Array Data";
   assert_equal_int_array shape zeros_array.shape "Zeros Array Shape";
 
-  (* 测试 ones *)
+  (* Test ones *)
   let ones_array = ones shape in
-  Printf.printf "ones - 结果形状: ";
+  Printf.printf "ones - Result shape: ";
   print_shape ones_array.shape;
-  Printf.printf "ones - 结果数据: ";
+  Printf.printf "ones - Result data: ";
   print_data ones_array.data;
   let expected_data = [|1.0; 1.0; 1.0; 1.0; 1.0; 1.0|] in
   assert_equal_float_array expected_data ones_array.data "Ones Array Data";
   assert_equal_int_array shape ones_array.shape "Ones Array Shape";
 ;;
 
-(* 测试 slice len = 1 *)
+(* Test slice with len = 1 *)
 let test_slice_len1 () =
   Printf.printf "Testing slice function for len = 1...\n";
 
@@ -541,16 +541,16 @@ let test_slice_len1 () =
   let expected_shape = [|3|] in
   let expected_data = [|2.0; 3.0; 4.0|] in
 
-  Printf.printf "slice len=1 - 结果形状: ";
+  Printf.printf "slice len=1 - Result shape: ";
   print_shape result.shape;
-  Printf.printf "slice len=1 - 结果数据: ";
+  Printf.printf "slice len=1 - Result data: ";
   print_data result.data;
 
   assert_equal_float_array expected_data result.data "Slice len=1 Array Data";
   assert_equal_int_array expected_shape result.shape "Slice len=1 Array Shape";
 ;;
 
-(* 测试 slice len = 2 *)
+(* Test slice with len = 2 *)
 let test_slice_len2 () =
   Printf.printf "Testing slice function for len = 2...\n";
 
@@ -562,16 +562,16 @@ let test_slice_len2 () =
   let expected_shape = [|1; 2|] in
   let expected_data = [|2.0; 3.0|] in
 
-  Printf.printf "slice len=2 - 结果形状: ";
+  Printf.printf "slice len=2 - Result shape: ";
   print_shape result.shape;
-  Printf.printf "slice len=2 - 结果数据: ";
+  Printf.printf "slice len=2 - Result data: ";
   print_data result.data;
 
   assert_equal_float_array expected_data result.data "Slice len=2 Array Data";
   assert_equal_int_array expected_shape result.shape "Slice len=2 Array Shape";
 ;;
 
-(* 测试 slice len = 3 *)
+(* Test slice with len = 3 *)
 let test_slice_len3 () =
   Printf.printf "Testing slice function for len = 3...\n";
 
@@ -583,20 +583,20 @@ let test_slice_len3 () =
   let expected_shape = [|2; 1; 2|] in
   let expected_data = [|2.0; 3.0; 8.0; 9.0|] in
 
-  Printf.printf "slice len=3 - 结果形状: ";
+  Printf.printf "slice len=3 - Result shape: ";
   print_shape result.shape;
-  Printf.printf "slice len=3 - 结果数据: ";
+  Printf.printf "slice len=3 - Result data: ";
   print_data result.data;
 
   assert_equal_float_array expected_data result.data "Slice len=3 Array Data";
   assert_equal_int_array expected_shape result.shape "Slice len=3 Array Shape";
 ;;
 
-(* 测试 slice len = 4 *)
+(* Test slice function with len = 4 *)
 let test_slice_len4 () =
   Printf.printf "Testing slice function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let lst = ref [] in 
   for i = 1 to 120 do 
     lst := (float_of_int i) :: !lst 
@@ -605,189 +605,189 @@ let test_slice_len4 () =
   let data = Array.of_list (List.rev !lst) in 
   let shape = [|2; 3; 4; 5|] in 
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let nd = create data shape in 
   
-  (* 执行切片操作 *)
+  (* Perform slice operation *)
   let result = slice nd [(0, 1); (1, 3); (1, 4); (3, 5)] in 
 
-  (* 定义预期的形状和数据 *)
+  (* Define expected shape and data *)
   let expected_shape = [|1; 2; 3; 2|] in 
   let expected_data = [|29.0; 30.0; 34.0; 35.0; 39.0; 40.0; 49.0; 50.0; 54.0; 55.0; 59.0; 60.0|] in
   
-  (* 打印切片结果的形状和数据 *)
-  Printf.printf "slice - 结果形状: ";
+  (* Print the result's shape and data *)
+  Printf.printf "slice - Result shape: ";
   print_shape result.shape;
-  Printf.printf "slice - 结果数据: ";
+  Printf.printf "slice - Result data: ";
   print_data result.data;
 
-  (* 断言结果 *)
+  (* Assert results *)
   assert_equal_float_array expected_data result.data "Slice Array Data";
   assert_equal_int_array expected_shape result.shape "Slice Array Shape";
 ;;
 
 
-(* 测试 sum *)
+(* Test sum function *)
 let test_sum () =
   Printf.printf "Testing sum function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 sum 操作 *)
+  (* Perform sum operation *)
   let result = sum t in
   let expected = 21.0 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (result = expected);
   Printf.printf "Passed: Sum Array Data\n";
 ;;
 
-(* 测试 mean *)
+(* Test mean function *)
 let test_mean () =
   Printf.printf "Testing mean function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 mean 操作 *)
+  (* Perform mean operation *)
   let result = mean t in
   let expected = 3.5 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (result = expected);
   Printf.printf "Passed: Mean Array Data\n";
 ;;
 
-(* 测试 variance *)
+(* Test variance function *)
 let test_var () =
   Printf.printf "Testing variance function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 variance 操作 *)
+  (* Perform variance operation *)
   let result = var t in
   let expected = 2.91666667 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (abs_float (result -. expected) < 0.00001);
   Printf.printf "Passed: Variance Array Data\n";
 ;;
 
-(* 测试 std *)
+(* Test standard deviation function *)
 let test_std () =
   Printf.printf "Testing standard deviation function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 2.0; 3.0; 4.0; 5.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 std 操作 *)
+  (* Perform standard deviation operation *)
   let result = std t in
   let expected = 1.70782513 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (abs_float (result -. expected) < 0.00001);
   Printf.printf "Passed: Standard Deviation Array Data\n";
 ;;
 
-(* 测试 max *)
+(* Test max function *)
 let test_max () =
   Printf.printf "Testing max function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 3.0; 5.0; 2.0; 4.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 max 操作 *)
+  (* Perform max operation *)
   let result = max t in
   let expected = 6.0 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (result = expected);
   Printf.printf "Passed: Max Array Data\n";
 ;;
 
-(* 测试 min *)
+(* Test min function *)
 let test_min () =
   Printf.printf "Testing min function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 3.0; 5.0; 2.0; 4.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 min 操作 *)
+  (* Perform min operation *)
   let result = min t in
   let expected = 1.0 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (result = expected);
   Printf.printf "Passed: Min Array Data\n";
 ;;
 
-(* 测试 argmax *)
+(* Test argmax function *)
 let test_argmax () =
   Printf.printf "Testing argmax function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 3.0; 5.0; 2.0; 4.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 argmax 操作 *)
+  (* Perform argmax operation *)
   let result = argmax t in
   let expected = 5 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (result = expected);
   Printf.printf "Passed: Argmax Array Data\n";
 ;;
 
-(* 测试 argmin *)
+(* Test argmin function *)
 let test_argmin () =
   Printf.printf "Testing argmin function...\n";
 
-  (* 初始化数据 *)
+  (* Initialize data *)
   let data = [|1.0; 3.0; 5.0; 2.0; 4.0; 6.0|] in
   let shape = [|2; 3|] in
 
-  (* 创建 ndarray *)
+  (* Create ndarray *)
   let t = create data shape in
 
-  (* 执行 argmin 操作 *)
+  (* Perform argmin operation *)
   let result = argmin t in
   let expected = 0 in
 
-  (* 断言结果 *)
+  (* Assert result *)
   assert (result = expected);
   Printf.printf "Passed: Argmin Array Data\n";
 ;;
 
-(* 初始化四维测试数据 *)
+(* Initialize 4D test data *)
 let initialize_4d_test_data () =
   let lst = ref [] in
   for i = 1 to 120 do
@@ -798,13 +798,13 @@ let initialize_4d_test_data () =
   create data shape
 ;;
 
-(* 测试 dsum *)
+(* Test dsum *)
 let test_dsum () =
   Printf.printf "Testing dsum function...\n";
 
   let t = initialize_4d_test_data () in
 
-  (* 在维度 2 上进行求和 *)
+  (* Perform summation along dimension 2 *)
   let result = dsum t 2 in
   let expected_data = [|34.0;  38.0;  42.0;  46.0;  50.0; 114.0; 118.0; 122.0; 126.0; 130.0; 194.0; 198.0; 202.0; 206.0;
   210.0; 274.0; 278.0; 282.0; 286.0; 290.0; 354.0; 358.0; 362.0; 366.0; 370.0; 434.0; 438.0; 442.0;
@@ -816,13 +816,13 @@ let test_dsum () =
   Printf.printf "Passed: Dsum Array Data\n";
 ;;
 
-(* 测试 dmean *)
+(* Test dmean *)
 let test_dmean () =
   Printf.printf "Testing dmean function...\n";
 
   let t = initialize_4d_test_data () in
 
-  (* 在维度 3 上进行均值计算 *)
+  (* Perform mean calculation along dimension 3 *)
   let result = dmean t 3 in
   let expected_data = [|3.0;   8.0;  13.0;  18.0;  23.0;  28.0;  33.0;  38.0;  43.0;  48.0;  53.0;  58.0;  63.0;  68.0;
   73.0;  78.0;  83.0;  88.0;  93.0;  98.0; 103.0; 108.0; 113.0; 118.0;|] in
@@ -833,13 +833,13 @@ let test_dmean () =
   Printf.printf "Passed: Dmean Array Data\n";
 ;;
 
-(* 测试 dvariance *)
+(* Test dvariance *)
 let test_dvar () =
   Printf.printf "Testing dvariance function...\n";
 
   let t = initialize_4d_test_data () in
 
-  (* 在维度 2 上进行方差计算 *)
+  (* Perform variance calculation along dimension 2 *)
   let result = dvar t 2 in
   let expected_data = [|31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25;
   31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25; 31.25;
@@ -852,13 +852,13 @@ let test_dvar () =
   Printf.printf "Passed: Dvariance Array Data\n";
 ;;
 
-(* 测试 dstd *)
+(* Test dstd *)
 let test_dstd () =
   Printf.printf "Testing dstd function...\n";
 
   let t = initialize_4d_test_data () in
 
-  (* 在维度 3 上进行标准差计算 *)
+  (* Perform standard deviation calculation along dimension 3 *)
   let result = dstd t 3 in
   let expected_data = [|1.41421356; 1.41421356; 1.41421356; 1.41421356; 1.41421356; 1.41421356;
   1.41421356; 1.41421356; 1.41421356; 1.41421356; 1.41421356; 1.41421356;
@@ -871,13 +871,13 @@ let test_dstd () =
   Printf.printf "Passed: Dstd Array Data\n";
 ;;
 
-(* 测试 dmax *)
+(* Test dmax *)
 let test_dmax () =
   Printf.printf "Testing dmax function...\n";
 
   let t = initialize_4d_test_data () in
 
-  (* 在维度 2 上查找最大值 *)
+  (* Find maximum values along dimension 2 *)
   let result = dmax t 2 in
   let expected_data = [|16.0; 17.0; 18.0; 19.0; 20.0; 36.0; 37.0; 38.0; 39.0; 40.0; 56.0; 57.0; 58.0; 59.0; 
   60.0; 76.0; 77.0; 78.0; 79.0; 80.0; 96.0; 97.0; 98.0; 99.0;100.0;116.0;117.0;118.0; 119.0;120.0;|] in
@@ -888,13 +888,13 @@ let test_dmax () =
   Printf.printf "Passed: Dmax Array Data\n";
 ;;
 
-(* 测试 dmin *)
+(* Test dmin *)
 let test_dmin () =
   Printf.printf "Testing dmin function...\n";
 
   let t = initialize_4d_test_data () in
 
-  (* 在维度 2 上查找最小值 *)
+  (* Find minimum values along dimension 2 *)
   let result = dmin t 2 in
   let expected_data = [|1.0;   2.0;   3.0;   4.0;   5.0;  21.0;  22.0;  23.0;  24.0;  25.0;  41.0;  42.0;  43.0;  44.0;
   45.0;  61.0;  62.0;  63.0;  64.0;  65.0;  81.0;  82.0;  83.0;  84.0;  85.0; 101.0; 102.0; 103.0;
@@ -1104,7 +1104,7 @@ let test_pad_shape_to () =
 
 ;;
 
-(* 主测试函数 *)
+(* Main test function *)
 let () =
   Printf.printf "Start Test!";
   test_set();
