@@ -16,12 +16,12 @@ type t = {
   shape: int array;
 }
 
-(* 计算元素总数 *)
+(* Calculate total number of elements *)
 let numel shape =
   Array.fold_left ( * ) 1 shape
 ;;
 
-(* 计算步长 *)
+(* Calculate strides *)
 let strides shape =
   let n = Array.length shape in
   let strides = Array.make n 1 in
@@ -31,7 +31,7 @@ let strides shape =
   strides
 ;;
 
-(* 自定义的两个数组的元素乘积并求和函数 *)
+(* Custom function to compute the element-wise product of two arrays and sum them *)
 let sum_multiplied a b =
   let len = Array.length a in
   if len <> Array.length b then
@@ -44,7 +44,7 @@ let sum_multiplied a b =
     !acc
 ;;
 
-(* 检查是否可广播 *)
+(* Check if broadcasting is possible *)
 let is_broadcastable shape1 shape2 =
   let len1 = Array.length shape1 in
   let len2 = Array.length shape2 in
@@ -62,7 +62,7 @@ let is_broadcastable shape1 shape2 =
   with Exit -> false
 ;;
 
-(* 计算广播后的形状 *)
+(* Calculate the shape after broadcasting *)
 let broadcast_shape shape1 shape2 =
   let len1 = Array.length shape1 in
   let len2 = Array.length shape2 in
@@ -74,7 +74,7 @@ let broadcast_shape shape1 shape2 =
   Array.init max_len (fun i -> Int.max s1.(i) s2.(i))
 ;;
 
-(* 广播加法 *)
+(* Broadcast addition *)
 let add a b =
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
@@ -86,7 +86,7 @@ let add a b =
   let len_b = Array.length b.shape in
   let len_res = Array.length shape in
 
-  (* 填充 shape1 和 shape2 以匹配广播后的 shape *)
+  (* Fill shape1 and shape2 to match the broadcasted shape *)
   let s_a = Array.make len_res 1 in
   let s_b = Array.make len_res 1 in
   Array.blit a.shape 0 s_a (len_res - len_a) len_a;
@@ -121,7 +121,7 @@ let add a b =
   { data = result_data; shape }
 ;;
 
-(* 广播减法 *)
+(* Broadcast subtraction *)
 let sub a b =
   (* print_shape a.shape; *)
   (* print_shape b.shape; *)
@@ -135,7 +135,7 @@ let sub a b =
   let len_b = Array.length b.shape in
   let len_res = Array.length shape in
 
-  (* 填充 shape1 和 shape2 以匹配广播后的 shape *)
+  (* Fill shape1 and shape2 to match the broadcasted shape *)
   let s_a = Array.make len_res 1 in
   let s_b = Array.make len_res 1 in
   Array.blit a.shape 0 s_a (len_res - len_a) len_a;
@@ -170,7 +170,7 @@ let sub a b =
   { data = result_data; shape }
 ;;
 
-(* 广播乘法 *)
+(* Broadcasting multiplication *)
 let mul a b =
   (* print_shape a.shape; *)
   (* print_shape b.shape; *)
@@ -184,7 +184,7 @@ let mul a b =
   let len_b = Array.length b.shape in
   let len_res = Array.length shape in
 
-  (* 填充 shape1 和 shape2 以匹配广播后的 shape *)
+  (* Fill shape1 and shape2 to match the broadcasted shape *)
   let s_a = Array.make len_res 1 in
   let s_b = Array.make len_res 1 in
   Array.blit a.shape 0 s_a (len_res - len_a) len_a;
@@ -219,7 +219,7 @@ let mul a b =
   { data = result_data; shape }
 ;;
 
-(* 广播除法 *)
+(* Broadcasting division *)
 let div a b =
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
@@ -231,7 +231,7 @@ let div a b =
   let len_b = Array.length b.shape in
   let len_res = Array.length shape in
 
-  (* 填充 shape1 和 shape2 以匹配广播后的 shape *)
+  (* Fill shape1 and shape2 to match the broadcasted shape *)
   let s_a = Array.make len_res 1 in
   let s_b = Array.make len_res 1 in
   Array.blit a.shape 0 s_a (len_res - len_a) len_a;
@@ -378,7 +378,7 @@ let matmul a b =
     { data = result_data; shape = output_shape }
   ;;
   
-(* 创建一个ndarray *)
+(* Create an ndarray *)
 let create (data: float array) (shape: int array) : t =
   let expected_size = Array.fold_left ( * ) 1 shape in
   if Array.length data <> expected_size then
@@ -389,60 +389,60 @@ let create (data: float array) (shape: int array) : t =
 let scaler (data: float) = 
   create [|data|] [||]
 
-(* 生成全零的ndarray *)
+(* Generate a zero ndarray *)
 let zeros (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   { data = Array.make size 0.0; shape }
 
-(* 生成全一的ndarray *)
+(* Generate a ones ndarray *)
 let ones (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   { data = Array.make size 1.0; shape }
 
-let arange stop : t=
+let arange stop : t =
   let n = int_of_float stop in
   let data = Array.init n (fun i -> float_of_int i) in
   { data; shape = [|n|] }
 
-(* 生成随机值的ndarray *)
+(* Generate a random value ndarray *)
 let rand (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   let data = Array.init size (fun _ -> (Random.float 2.0) -. 1.0) in
   { data; shape }
 
-(* Xavier 初始化 *)
+(* Xavier initialization *)
 let xavier_init (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   let scale = sqrt (2.0 /. float_of_int size) in
   let data = Array.init size (fun _ -> (Random.float 1.0 -. 0.5) *. scale) in
   { data; shape }
 
-(* Kaiming 初始化 *)
+(* Kaiming initialization *)
 let kaiming_init (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   let scale = sqrt (2.0 /. float_of_int size) in
   let data = Array.init size (fun _ -> Random.float scale) in
   { data; shape }
 
-(* 获取ndarray的形状 *)
+(* Get the shape of the ndarray *)
 let shape (arr: t) : int array =
   arr.shape
 
-(* 获取ndarray的维数 *)
+(* Get the dimensions of the ndarray *)
 let dim (arr: t) : int =
   Array.length arr.shape
 
-(* 获取ndarray指定位置的值 *)
+(* Get the value at a specified position in the ndarray *)
 let at arr indices =
   let strides = strides arr.shape in
   let dims = Array.length arr.shape in
   let idx_len = Array.length indices in
 
-  (* 检查索引长度是否匹配 *)
+  (* Check if the index length matches *)
   if idx_len <> dims then
     failwith (Printf.sprintf "Index length %d does not match number of dimensions %d" idx_len dims)
   else
-    (* 检查每个索引是否在有效范围内 *)
+    (* Check if each index is within the valid range *)
     let valid = ref true in
     for i = 0 to dims - 1 do
       if indices.(i) < 0 || indices.(i) >= arr.shape.(i) then
@@ -451,19 +451,18 @@ let at arr indices =
     if not !valid then
       failwith "Index out of bounds"
     else
-      (* 计算 flat_index *)
+      (* Calculate flat_index *)
       let flat_index =
         Array.fold_left (fun acc (i, stride) -> acc + i * stride) 0 (Array.combine indices strides)
       in
-      (* 检查 flat_index 是否在 data 范围内 *)
+      (* Check if flat_index is within the data range *)
       if flat_index >= Array.length arr.data || flat_index < 0 then
         failwith "Flat index out of bounds"
       else
         arr.data.(flat_index)
 ;;
 
-
-(* reshape 函数 *)
+(* reshape function *)
 let reshape (arr: t) (new_shape: int array) : t =
   let old_size = numel arr.shape in
   let new_size = numel new_shape in
@@ -477,17 +476,16 @@ let reshape (arr: t) (new_shape: int array) : t =
 (* ------------------------------------------------------------------------------------------- *)
 
 (* Updates the element at a specified index in the ndarray *)
-(* 更新 ndarray 中指定索引的元素 *)
 let set t idx value =
   let strides = strides t.shape in
   let dims = Array.length t.shape in
   let idx_len = Array.length idx in
 
-  (* 检查索引长度是否匹配 *)
+  (* Check if the index length matches *)
   if idx_len <> dims then
     failwith (Printf.sprintf "Index length %d does not match number of dimensions %d" idx_len dims)
   else
-    (* 检查每个索引是否在有效范围内 *)
+    (* Check if each index is within the valid range *)
     let valid = ref true in
     for i = 0 to dims - 1 do
       if idx.(i) < 0 || idx.(i) >= t.shape.(i) then
@@ -496,11 +494,11 @@ let set t idx value =
     if not !valid then
       failwith "Index out of bounds"
     else
-      (* 计算 flat_index *)
+      (* Calculate flat_index *)
       let flat_index =
         Array.fold_left (fun acc (i, stride) -> acc + i * stride) 0 (Array.combine idx strides)
       in
-      (* 检查 flat_index 是否在 data 范围内 *)
+      (* Check if flat_index is within the data range *)
       if flat_index >= Array.length t.data || flat_index < 0 then
         failwith "Flat index out of bounds"
       else
@@ -643,7 +641,7 @@ let dsum t dim =
   let result_data = Array.make num_new_elements 0.0 in
 
   for idx = 0 to num_new_elements - 1 do
-    (* 计算新形状下的多维索引 *)
+    (* Calculate the multi-dimensional index for the new shape *)
     let idx_new = Array.make (ndim - 1) 0 in
     let tmp_idx = ref idx in
     for i = (ndim - 2) downto 0 do
@@ -651,7 +649,7 @@ let dsum t dim =
       idx_new.(i) <- !tmp_idx mod dim_size;
       tmp_idx := !tmp_idx / dim_size;
     done;
-    (* 将 idx_new 映射回原始数组的索引 *)
+    (* Map idx_new back to the original array's index *)
     let idx_full = Array.make ndim 0 in
     for i = 0 to ndim - 1 do
       if i < dim then
@@ -659,7 +657,7 @@ let dsum t dim =
       else if i > dim then
         idx_full.(i) <- idx_new.(i - 1)
     done;
-    (* 在指定维度上累加 *)
+    (* Accumulate sum along the specified dimension *)
     let sum = ref 0.0 in
     for i_dim = 0 to shape.(dim) - 1 do
       idx_full.(dim) <- i_dim;
@@ -676,7 +674,6 @@ let dsum t dim =
   done;
   create result_data new_shape
 
-    
 let dmean t dim =
   let shape = t.shape in
   let ndim = Array.length shape in
@@ -689,7 +686,7 @@ let dmean t dim =
   let count = float_of_int shape.(dim) in
 
   for idx = 0 to num_new_elements - 1 do
-    (* 计算新形状下的多维索引 *)
+    (* Calculate the multi-dimensional index for the new shape *)
     let idx_new = Array.make (ndim - 1) 0 in
     let tmp_idx = ref idx in
     for i = (ndim - 2) downto 0 do
@@ -697,7 +694,7 @@ let dmean t dim =
       idx_new.(i) <- !tmp_idx mod dim_size;
       tmp_idx := !tmp_idx / dim_size;
     done;
-    (* 映射回原始数组的索引 *)
+    (* Map back to the original array's index *)
     let idx_full = Array.make ndim 0 in
     for i = 0 to ndim - 1 do
       if i < dim then
@@ -705,7 +702,7 @@ let dmean t dim =
       else if i > dim then
         idx_full.(i) <- idx_new.(i - 1)
     done;
-    (* 计算均值 *)
+    (* Calculate the mean *)
     let sum = ref 0.0 in
     for i_dim = 0 to shape.(dim) - 1 do
       idx_full.(dim) <- i_dim;
@@ -732,7 +729,7 @@ let dvar t dim =
   let count = float_of_int shape.(dim) in
 
   for idx = 0 to num_new_elements - 1 do
-    (* 计算新形状下的多维索引 *)
+    (* Calculate the multi-dimensional index for the new shape *)
     let idx_new = Array.make (ndim - 1) 0 in
     let tmp_idx = ref idx in
     for i = (ndim - 2) downto 0 do
@@ -740,7 +737,7 @@ let dvar t dim =
       idx_new.(i) <- !tmp_idx mod dim_size;
       tmp_idx := !tmp_idx / dim_size;
     done;
-    (* 映射回原始数组的索引 *)
+    (* Map back to the original array's index *)
     let idx_full = Array.make ndim 0 in
     for i = 0 to ndim - 1 do
       if i < dim then
@@ -748,7 +745,7 @@ let dvar t dim =
       else if i > dim then
         idx_full.(i) <- idx_new.(i - 1)
     done;
-    (* 计算方差 *)
+    (* Calculate variance *)
     let var_accum = ref 0.0 in
     for i_dim = 0 to shape.(dim) - 1 do
       idx_full.(dim) <- i_dim;
@@ -779,7 +776,7 @@ let dstd t dim =
     let result_data = Array.make num_new_elements Float.neg_infinity in
   
     for idx = 0 to num_new_elements - 1 do
-      (* 计算新形状下的多维索引 *)
+      (* Calculate the multi-dimensional index for the new shape *)
       let idx_new = Array.make (ndim - 1) 0 in
       let tmp_idx = ref idx in
       for i = (ndim - 2) downto 0 do
@@ -787,7 +784,7 @@ let dstd t dim =
         idx_new.(i) <- !tmp_idx mod dim_size;
         tmp_idx := !tmp_idx / dim_size;
       done;
-      (* 映射回原始数组的索引 *)
+      (* Map back to the original array's index *)
       let idx_full = Array.make ndim 0 in
       for i = 0 to ndim - 1 do
         if i < dim then
@@ -795,7 +792,7 @@ let dstd t dim =
         else if i > dim then
           idx_full.(i) <- idx_new.(i - 1)
       done;
-      (* 计算最大值 *)
+      (* Calculate the maximum value *)
       let max_val = ref Float.neg_infinity in
       for i_dim = 0 to shape.(dim) - 1 do
         idx_full.(dim) <- i_dim;
@@ -811,7 +808,7 @@ let dstd t dim =
       done;
       result_data.(idx) <- !max_val
     done;
-    create result_data new_shape
+    create result_data new_shape  
     
 let dmin t dim =
   let shape = t.shape in
@@ -822,7 +819,7 @@ let dmin t dim =
   let result_data = Array.make num_new_elements Float.infinity in
 
   for idx = 0 to num_new_elements - 1 do
-    (* 计算新形状下的多维索引 *)
+    (* Calculate the multidimensional index in the new shape *)
     let idx_new = Array.make (ndim - 1) 0 in
     let tmp_idx = ref idx in
     for i = (ndim - 2) downto 0 do
@@ -830,7 +827,7 @@ let dmin t dim =
       idx_new.(i) <- !tmp_idx mod dim_size;
       tmp_idx := !tmp_idx / dim_size;
     done;
-    (* 映射回原始数组的索引 *)
+    (* Map back to the original array's index *)
     let idx_full = Array.make ndim 0 in
     for i = 0 to ndim - 1 do
       if i < dim then
@@ -838,7 +835,7 @@ let dmin t dim =
       else if i > dim then
         idx_full.(i) <- idx_new.(i - 1)
     done;
-    (* 计算最小值 *)
+    (* Calculate the minimum value *)
     let min_val = ref Float.infinity in
     for i_dim = 0 to shape.(dim) - 1 do
       idx_full.(dim) <- i_dim;
@@ -854,7 +851,7 @@ let dmin t dim =
     done;
     result_data.(idx) <- !min_val
   done;
-  create result_data new_shape
+  create result_data new_shape    
           
 (* Element-wise exponential *)
 let exp t =
@@ -1000,13 +997,13 @@ let to_string arr =
   in
   let rec format_ndarray data shape level =
     if Array.length shape = 0 then
-      (* Shape 为空，表示标量值 *)
+      (* Empty shape means scalar value *)
       string_of_float data.(0)
     else if Array.length shape = 1 then
-      (* 最后一维 *)
+      (* Last dimension *)
       format_row (Array.init shape.(0) (fun i -> data.(i)))
     else
-      (* 多维数组情况 *)
+      (* Multidimensional array case *)
       let dim = shape.(0) in
       let sub_shape = Array.sub shape 1 (Array.length shape - 1) in
       let sub_size = Array.fold_left ( * ) 1 sub_shape in
@@ -1020,7 +1017,7 @@ let to_string arr =
         (String.concat (Printf.sprintf ",\n%s" indent) (Array.to_list sub_results))
         (if level > 0 then String.make (2 * (level - 1)) ' ' else "")
   in
-  (* 检查形状和数据是否匹配 *)
+  (* Check if shape and data size match *)
   if Array.fold_left ( * ) 1 arr.shape <> Array.length arr.data then
     failwith "Shape and data size mismatch"
   else
