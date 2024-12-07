@@ -153,15 +153,29 @@ val squeeze : t -> t
 (** [squeeze t] removes dimensions of size 1 from [t]. *)
 
 val pad_shape_to : int array -> int array -> int array * int array
+(** [pad_shape_to src_shape target_shape] computes the necessary paddings to transform 
+    [src_shape] into [target_shape]. Returns a pair of arrays representing 
+    pre-padding and post-padding for each dimension. *)
 
-val map : t-> f: (float -> float) ->t
+val map : t -> f:(float -> float) -> t
+(** [map t ~f] applies the function [f] to each element of the ndarray [t] 
+    and returns a new ndarray with the resulting values. *)
 
 val reduce_sum_to_shape : t -> int array -> t
+(** [reduce_sum_to_shape t shape] reduces the ndarray [t] to the specified [shape] 
+    by summing over the necessary dimensions. *)
 
-val negate: t->t
+val negate : t -> t
+(** [negate t] negates each element of the ndarray [t], 
+    returning a new ndarray where each element is the negative of the corresponding input element. *)
 
-val relu: t->t
+val relu : t -> t
+(** [relu t] applies the ReLU (Rectified Linear Unit) function to each element of the ndarray [t], 
+    replacing negative values with 0 and leaving non-negative values unchanged. *)
 
-val to_string: t->string
+val to_string : t -> string
+(** [to_string t] converts the ndarray [t] to its string representation 
+    for easier visualization and debugging. *)
 
-val scaler: float -> t
+val scaler : float -> t
+(** [scaler x] creates a scalar ndarray containing the single value [x]. *)
