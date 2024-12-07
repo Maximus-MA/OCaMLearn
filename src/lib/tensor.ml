@@ -153,11 +153,11 @@ let add t1 t2 =
       let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t1.data) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t1); *)
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t2.data) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t2); *)
         accumulate_grad t2 grad_t2;
 		);
   t
@@ -178,11 +178,11 @@ let sub t1 t2 =
       let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = Ndarray.reduce_sum_to_shape grad_output (Ndarray.shape t1.data) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t1); *)
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = (Ndarray.negate grad_output |> Ndarray.reduce_sum_to_shape) (shape t2) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t2); *)
         accumulate_grad t2 grad_t2;
     );
   t
@@ -202,11 +202,11 @@ let mul t1 t2 =
       let grad_output = t.grad in
       if t1.requires_grad then
         let grad_t1 = (Ndarray.mul grad_output t2.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t1); *)
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = (Ndarray.mul grad_output t1.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t2); *)
         accumulate_grad t2 grad_t2;
     );
   t
@@ -227,13 +227,13 @@ let mul t1 t2 =
         let grad_output = t.grad in
         if t1.requires_grad then
           let grad_t1 = (Ndarray.div grad_output t2.data |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
-          Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);
+          (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t1); *)
           accumulate_grad t1 grad_t1;
         if t2.requires_grad then
           let numerator = Ndarray.mul grad_output t1.data in
           let denominator = Ndarray.mul t2.data t2.data in
           let grad_t2 = (Ndarray.div numerator denominator |> Ndarray.negate |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
-          Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
+          (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t2); *)
           accumulate_grad t2 grad_t2;
       );
     t
@@ -256,12 +256,12 @@ let matmul t1 t2 =
       if t1.requires_grad then
         let grad_t1 = (Ndarray.matmul grad_output (Ndarray.transpose t2.data)
                       |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t1.data) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t1); 
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t1);  *)
         accumulate_grad t1 grad_t1;
       if t2.requires_grad then
         let grad_t2 = (Ndarray.matmul (Ndarray.transpose t1.data) grad_output
                       |> Ndarray.reduce_sum_to_shape) (Ndarray.shape t2.data) in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t2);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t2); *)
         accumulate_grad t2 grad_t2;
     );
   t
@@ -280,7 +280,7 @@ let matmul t1 t2 =
       t_new.backward_fn <- Some (fun () ->
         let grad_output = t_new.grad in
         let grad_t = Ndarray.transpose grad_output in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_t);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t); *)
         accumulate_grad t grad_t;
       );
     t_new
@@ -295,7 +295,7 @@ let reshape t ~shape =
     res.backward_fn <- Some (fun () ->
       let grad_output = res.grad in
       let grad_t = Ndarray.reshape grad_output (Ndarray.shape t.data) in
-      Printf.printf "[%s]\n" (Ndarray.to_string grad_t);
+      (* Printf.printf "[%s]\n" (Ndarray.to_string grad_t); *)
       accumulate_grad t grad_t;
     );
   res
@@ -332,7 +332,7 @@ let sum ?dim t =
         | Some d -> Ndarray.expand_dims grad_output d
         | None -> not_implemented "sum"
       in
-      Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
+      (* Printf.printf "[%s]\n" (Ndarray.to_string grad_input); *)
       accumulate_grad t grad_input;
     );  t_new
 
@@ -364,7 +364,7 @@ let sum ?dim t =
         in
         let grad_single = (Ndarray.scaler num_elements) in
         let grad_input = Ndarray.div grad_input grad_single in
-        Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
+        (* Printf.printf "[%s]\n" (Ndarray.to_string grad_input); *)
         accumulate_grad t grad_input;
       );
     t_new
@@ -461,7 +461,7 @@ let neg t =
       let grad_output = t_new.grad in
       (* (Ndarray.print_shape grad_output.shape); *)
       let grad_input = Ndarray.negate grad_output in
-      Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
+      (* Printf.printf "[%s]\n" (Ndarray.to_string grad_input); *)
       accumulate_grad t grad_input;
     );
   t_new
@@ -476,7 +476,7 @@ let relu t =
     let grad_output = res.grad in
     let mask = Ndarray.map ~f:(fun x -> if Float.(x > 0.0) then 1.0 else 0.0) t.data in
     let grad_input = Ndarray.mul grad_output mask in
-    Printf.printf "[%s]\n" (Ndarray.to_string grad_input);
+    (* Printf.printf "[%s]\n" (Ndarray.to_string grad_input); *)
     accumulate_grad t grad_input);
   res
 

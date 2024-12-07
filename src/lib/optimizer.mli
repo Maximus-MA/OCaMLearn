@@ -3,8 +3,8 @@ type tensor = Tensor.t
 
 type t = {
   parameters: tensor list;  (* List of tensors representing the parameters to optimize. *)
-  step: unit;       (* Function to update parameters based on their gradients. *)
-  zero_grad: unit;  (* Function to reset all gradients to zero. *)
+  step: unit -> unit;       (* Function to update parameters based on their gradients. *)
+  zero_grad: unit -> unit;  (* Function to reset all gradients to zero. *)
 }
 
 (* 
