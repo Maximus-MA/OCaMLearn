@@ -6,6 +6,11 @@ let print_shape shape =
     (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
 ;;
 
+(* let print_data data =
+  Printf.printf "[%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_float data)))
+;; *)
+
 type t = {
   data: float array;
   shape: int array;
@@ -434,17 +439,35 @@ let dim (arr: t) : int =
   Array.length arr.shape
 
 (* 获取ndarray指定位置的值 *)
-let at (arr: t) (indices: int array) : float =
-  let strides = Array.make (Array.length arr.shape) 1 in
-  for i = Array.length arr.shape - 2 downto 0 do
-    strides.(i) <- strides.(i + 1) * arr.shape.(i + 1)
-  done;
-  let index = ref 0 in
-  for i = 0 to Array.length indices - 1 do
-    index := !index + indices.(i) * strides.(i)
-  done;
-  arr.data.(!index)
+let at arr indices =
+  let strides = strides arr.shape in
+  let dims = Array.length arr.shape in
+  let idx_len = Array.length indices in
+
+  (* 检查索引长度是否匹配 *)
+  if idx_len <> dims then
+    failwith (Printf.sprintf "Index length %d does not match number of dimensions %d" idx_len dims)
+  else
+    (* 检查每个索引是否在有效范围内 *)
+    let valid = ref true in
+    for i = 0 to dims - 1 do
+      if indices.(i) < 0 || indices.(i) >= arr.shape.(i) then
+        valid := false
+    done;
+    if not !valid then
+      failwith "Index out of bounds"
+    else
+      (* 计算 flat_index *)
+      let flat_index =
+        Array.fold_left (fun acc (i, stride) -> acc + i * stride) 0 (Array.combine indices strides)
+      in
+      (* 检查 flat_index 是否在 data 范围内 *)
+      if flat_index >= Array.length arr.data || flat_index < 0 then
+        failwith "Flat index out of bounds"
+      else
+        arr.data.(flat_index)
 ;;
+
 
 (* reshape 函数 *)
 let reshape (arr: t) (new_shape: int array) : t =
@@ -460,13 +483,35 @@ let reshape (arr: t) (new_shape: int array) : t =
 (* ------------------------------------------------------------------------------------------- *)
 
 (* Updates the element at a specified index in the ndarray *)
+(* 更新 ndarray 中指定索引的元素 *)
 let set t idx value =
-  (* Calculate the flat index from multidimensional indices *)
-  let flat_index = 
-    Array.fold_left (fun (acc, stride) i -> (acc + i * stride, stride * t.shape.(i))) (0, 1) idx
-    |> fst 
-  in
-  t.data.(flat_index) <- value
+  let strides = strides t.shape in
+  let dims = Array.length t.shape in
+  let idx_len = Array.length idx in
+
+  (* 检查索引长度是否匹配 *)
+  if idx_len <> dims then
+    failwith (Printf.sprintf "Index length %d does not match number of dimensions %d" idx_len dims)
+  else
+    (* 检查每个索引是否在有效范围内 *)
+    let valid = ref true in
+    for i = 0 to dims - 1 do
+      if idx.(i) < 0 || idx.(i) >= t.shape.(i) then
+        valid := false
+    done;
+    if not !valid then
+      failwith "Index out of bounds"
+    else
+      (* 计算 flat_index *)
+      let flat_index =
+        Array.fold_left (fun acc (i, stride) -> acc + i * stride) 0 (Array.combine idx strides)
+      in
+      (* 检查 flat_index 是否在 data 范围内 *)
+      if flat_index >= Array.length t.data || flat_index < 0 then
+        failwith "Flat index out of bounds"
+      else
+        t.data.(flat_index) <- value
+;;
 
 (* Returns the transpose of a 2D ndarray *)
 let transpose t =
