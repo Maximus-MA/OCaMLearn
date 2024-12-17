@@ -11,7 +11,7 @@ let not_implemented feature_name =
   failwith (feature_name ^ " is not yet implemented")
 
 let normalize x =
-  not_implemented "normalize"
+  Ndarray.normalize x
 
 let resize width height =
   not_implemented "resize"

@@ -17,7 +17,10 @@ val split : t -> float -> t * t
 (** [split dataset ratio] splits the dataset [dataset] into two parts based on the specified [ratio].
     The first part contains the first [ratio] fraction of samples, and the second part contains the remaining samples. *)
 
+val one_hot_encode : int -> int -> float array
+(** [one_hot_encode num_classes label] converts a label into a one-hot encoded array.
+    It returns a one-hot encoded array representing the label. *)
 
-
-
-
+val load_csv : string -> int -> (string -> int) -> int -> t
+(** [load_csv file_path label_col label_string_to_int num_classes] loads a CSV file and converts it into a dataset.
+    The labels are converted to one-hot encoded arrays. *)

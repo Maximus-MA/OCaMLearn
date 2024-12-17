@@ -101,6 +101,9 @@ val min : t -> float
 val argmax : t -> int
 (** [argmax t] returns the index of the maximum value in ndarray [t]. *)
 
+val dargmax : t -> int -> t
+(** [dargmax dim t] computes the index of the maximum value along the specified dimension [dim] in ndarray [t]. *)
+
 val argmin : t -> int
 (** [argmin t] returns the index of the minimum value in ndarray [t]. *)
 
@@ -179,3 +182,7 @@ val to_string : t -> string
 
 val scaler : float -> t
 (** [scaler x] creates a scalar ndarray containing the single value [x]. *)
+
+val normalize : t -> t
+(** [normalize t] normalizes the ndarray [t] by subtracting the mean and dividing by the standard deviation for each feature.
+    It returns a new ndarray with the normalized values. *)

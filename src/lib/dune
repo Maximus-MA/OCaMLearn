@@ -28,7 +28,7 @@
 (library
  (name dataset)
  (modules dataset)
- (libraries core ndarray))
+ (libraries core ndarray csv))
 
 (library
  (name dataloader)

@@ -767,49 +767,94 @@ let dstd t dim =
   let var_result = dvar t dim in
   { data = Array.map sqrt var_result.data; shape = var_result.shape }
 
-  let dmax t dim =
-    let shape = t.shape in
-    let ndim = Array.length shape in
-    if dim < 0 || dim >= ndim then failwith "Dimension out of range";
-    let new_shape = Array.init (ndim - 1) (fun i -> if i < dim then shape.(i) else shape.(i + 1)) in
-    let num_new_elements = Array.fold_left ( * ) 1 new_shape in
-    let result_data = Array.make num_new_elements Float.neg_infinity in
-  
-    for idx = 0 to num_new_elements - 1 do
-      (* Calculate the multi-dimensional index for the new shape *)
-      let idx_new = Array.make (ndim - 1) 0 in
-      let tmp_idx = ref idx in
-      for i = (ndim - 2) downto 0 do
-        let dim_size = new_shape.(i) in
-        idx_new.(i) <- !tmp_idx mod dim_size;
-        tmp_idx := !tmp_idx / dim_size;
-      done;
-      (* Map back to the original array's index *)
-      let idx_full = Array.make ndim 0 in
-      for i = 0 to ndim - 1 do
-        if i < dim then
-          idx_full.(i) <- idx_new.(i)
-        else if i > dim then
-          idx_full.(i) <- idx_new.(i - 1)
-      done;
-      (* Calculate the maximum value *)
-      let max_val = ref Float.neg_infinity in
-      for i_dim = 0 to shape.(dim) - 1 do
-        idx_full.(dim) <- i_dim;
-        let flat_idx =
-          let idx_flat = ref 0 in
-          for i = 0 to ndim - 1 do
-            idx_flat := !idx_flat * shape.(i) + idx_full.(i)
-          done;
-          !idx_flat
-        in
-        if t.data.(flat_idx) > !max_val then
-          max_val := t.data.(flat_idx)
-      done;
-      result_data.(idx) <- !max_val
+let dmax t dim =
+  let shape = t.shape in
+  let ndim = Array.length shape in
+  if dim < 0 || dim >= ndim then failwith "Dimension out of range";
+  let new_shape = Array.init (ndim - 1) (fun i -> if i < dim then shape.(i) else shape.(i + 1)) in
+  let num_new_elements = Array.fold_left ( * ) 1 new_shape in
+  let result_data = Array.make num_new_elements Float.neg_infinity in
+
+  for idx = 0 to num_new_elements - 1 do
+    (* Calculate the multi-dimensional index for the new shape *)
+    let idx_new = Array.make (ndim - 1) 0 in
+    let tmp_idx = ref idx in
+    for i = (ndim - 2) downto 0 do
+      let dim_size = new_shape.(i) in
+      idx_new.(i) <- !tmp_idx mod dim_size;
+      tmp_idx := !tmp_idx / dim_size;
     done;
-    create result_data new_shape  
-    
+    (* Map back to the original array's index *)
+    let idx_full = Array.make ndim 0 in
+    for i = 0 to ndim - 1 do
+      if i < dim then
+        idx_full.(i) <- idx_new.(i)
+      else if i > dim then
+        idx_full.(i) <- idx_new.(i - 1)
+    done;
+    (* Calculate the maximum value *)
+    let max_val = ref Float.neg_infinity in
+    for i_dim = 0 to shape.(dim) - 1 do
+      idx_full.(dim) <- i_dim;
+      let flat_idx =
+        let idx_flat = ref 0 in
+        for i = 0 to ndim - 1 do
+          idx_flat := !idx_flat * shape.(i) + idx_full.(i)
+        done;
+        !idx_flat
+      in
+      if t.data.(flat_idx) > !max_val then
+        max_val := t.data.(flat_idx)
+    done;
+    result_data.(idx) <- !max_val
+  done;
+  create result_data new_shape  
+
+let dargmax t dim =
+  let shape = t.shape in
+  let ndim = Array.length shape in
+  if dim < 0 || dim >= ndim then failwith "Dimension out of range";
+  let new_shape = Array.init (ndim - 1) (fun i -> if i < dim then shape.(i) else shape.(i + 1)) in
+  let num_new_elements = Array.fold_left ( * ) 1 new_shape in
+  let result_data = Array.make num_new_elements 0.0 in
+
+  for idx = 0 to num_new_elements - 1 do
+    (* Calculate the multi-dimensional index for the new shape *)
+    let idx_new = Array.make (ndim - 1) 0 in
+    let tmp_idx = ref idx in
+    for i = (ndim - 2) downto 0 do
+      let dim_size = new_shape.(i) in
+      idx_new.(i) <- !tmp_idx mod dim_size;
+      tmp_idx := !tmp_idx / dim_size;
+    done;
+    (* Map back to the original array's index *)
+    let idx_full = Array.make ndim 0 in
+    for i = 0 to ndim - 1 do
+      if i < dim then
+        idx_full.(i) <- idx_new.(i)
+      else if i > dim then
+        idx_full.(i) <- idx_new.(i - 1)
+    done;
+    (* Calculate the argmax index *)
+    let max_val = ref Float.neg_infinity in
+    let argmax_idx = ref 0 in
+    for i_dim = 0 to shape.(dim) - 1 do
+      idx_full.(dim) <- i_dim;
+      let flat_idx =
+        let idx_flat = ref 0 in
+        for i = 0 to ndim - 1 do
+          idx_flat := !idx_flat * shape.(i) + idx_full.(i)
+        done;
+        !idx_flat
+      in
+      if t.data.(flat_idx) > !max_val then begin
+        max_val := t.data.(flat_idx);
+        argmax_idx := i_dim;
+      end
+    done;
+    result_data.(idx) <- float_of_int !argmax_idx
+  done;
+  create result_data new_shape
 let dmin t dim =
   let shape = t.shape in
   let ndim = Array.length shape in
@@ -1023,3 +1068,7 @@ let to_string arr =
   else
     format_ndarray arr.data arr.shape 0
 
+let normalize t =
+  let mean_vals = dmean t 0 in
+  let std_vals = dstd t 0 in
+  div (sub t mean_vals)  std_vals

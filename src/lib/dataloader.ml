@@ -32,20 +32,28 @@ let create ?(transforms = []) dataset ~batch_size ~shuffle  =
   if shuffle then 
     let shuffled_dataset = Dataset.shuffle dataset in
     let tensor_dataset = 
-      { data = Tensor.from_ndarray (apply_transforms shuffled_dataset.data transforms); 
-      label = Tensor.from_ndarray shuffled_dataset.label }
+      { data = Tensor.from_ndarray (apply_transforms shuffled_dataset.data transforms) ; 
+      label = Tensor.from_ndarray shuffled_dataset.label  }
     in let num_samples = shuffled_dataset.data.shape.(0) in 
     { dataset = tensor_dataset; batch_size = batch_size; total_batches = (num_samples + batch_size - 1) / batch_size }
   else
     let tensor_dataset = 
-    { data = Tensor.from_ndarray (apply_transforms dataset.data transforms); 
+    { data = Tensor.from_ndarray (apply_transforms dataset.data transforms) ; 
     label = Tensor.from_ndarray dataset.label }
     in let num_samples = dataset.data.shape.(0) in  
     { dataset = tensor_dataset; batch_size = batch_size; total_batches = (num_samples + batch_size - 1) / batch_size }
 
 let get_batch loader idx =
-  {data = Tensor.slice (loader.dataset.data) [idx*loader.batch_size, idx*loader.batch_size+loader.batch_size];
-  label = Tensor.slice (loader.dataset.label) [idx*loader.batch_size, idx*loader.batch_size+loader.batch_size]}
+  let generate_slice_ranges shape start_point end_point =
+    Array.to_list (Array.mapi (fun i dim_size ->
+        if i = 0 then (start_point, end_point) else (0, dim_size)
+      ) shape)
+  in
+  let num_samples = loader.dataset.data.data.shape.(0) in
+  let data_ranges = generate_slice_ranges loader.dataset.data.data.shape (idx*loader.batch_size) (Int.min (num_samples) (idx*loader.batch_size+loader.batch_size)) in
+  let label_ranges = generate_slice_ranges loader.dataset.label.data.shape (idx*loader.batch_size) (Int.min (num_samples) (idx*loader.batch_size+loader.batch_size)) in
+  {data = Tensor.slice (loader.dataset.data) data_ranges;
+  label = Tensor.slice (loader.dataset.label) label_ranges}
 
 let get_total_batches loader =
   loader.total_batches
