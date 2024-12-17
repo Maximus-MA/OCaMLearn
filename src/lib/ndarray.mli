@@ -186,3 +186,6 @@ val scaler : float -> t
 val normalize : t -> t
 (** [normalize t] normalizes the ndarray [t] by subtracting the mean and dividing by the standard deviation for each feature.
     It returns a new ndarray with the normalized values. *)
+val conv2d : t -> t -> int -> int -> t
+(** [conv2d input kernel stride padding] performs a 2D convolution on the input [input] with the given [kernel], [stride], and [padding].
+    It returns the convolved output. *)

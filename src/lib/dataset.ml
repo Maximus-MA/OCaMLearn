@@ -105,3 +105,62 @@ let load_csv file_path label_col label_string_to_int num_classes =
   let features_ndarray = Ndarray.create features [| num_samples ; feature_dim |] in
   let labels_tensor = Ndarray.create labels [| num_samples; num_classes |] in
   { data = features_ndarray; label = labels_tensor }
+
+let read_int ic =
+  let b1 = input_byte ic in
+  let b2 = input_byte ic in
+  let b3 = input_byte ic in
+  let b4 = input_byte ic in
+  (b1 lsl 24) lor (b2 lsl 16) lor (b3 lsl 8) lor b4
+
+let read_images filename =
+  let ic = open_in_bin filename in
+  let magic_number = read_int ic in
+  if magic_number <> 2051 then failwith "Invalid magic number for image file";
+  let num_images = read_int ic in
+  let num_rows = read_int ic in
+  let num_cols = read_int ic in
+  let images = Array.init num_images (fun _ ->
+    Array.init (num_rows * num_cols) (fun _ ->
+      input_byte ic |> float_of_int
+    )
+  ) in
+  close_in ic;
+  images
+
+let read_labels filename =
+  let ic = open_in_bin filename in
+  let magic_number = read_int ic in
+  if magic_number <> 2049 then failwith "Invalid magic number for label file";
+  let num_labels = read_int ic in
+  let labels = Array.init num_labels (fun _ ->
+    input_byte ic |> float_of_int
+  ) in
+  close_in ic;
+  labels
+
+
+let convert_labels_to_one_hot labels num_classes =
+  Array.map (fun label -> one_hot_encode num_classes (int_of_float label)) labels
+
+let load_mnist () =
+  (* Load the MNIST dataset *)
+  let train_images = read_images "dataset/mnist/train-images-idx3-ubyte" in
+  let train_labels = read_labels "dataset/mnist/train-labels-idx1-ubyte" in
+  let test_images = read_images "dataset/mnist/t10k-images-idx3-ubyte" in
+  let test_labels = read_labels "dataset/mnist/t10k-labels-idx1-ubyte" in
+
+  (* Convert the labels to one-hot encoding *)
+  let train_labels = convert_labels_to_one_hot train_labels 10 in
+  let test_labels = convert_labels_to_one_hot test_labels 10 in
+
+  (* Convert the data to ndarrays *)
+  let train_data = Ndarray.create (Array.concat (Array.to_list train_images)) [| Array.length train_images; 28 * 28 |] in
+  let train_labels = Ndarray.create (Array.concat (Array.to_list train_labels)) [| Array.length train_labels; 10 |] in
+  let test_data = Ndarray.create (Array.concat (Array.to_list test_images)) [| Array.length test_images; 28 * 28 |] in
+  let test_labels = Ndarray.create (Array.concat (Array.to_list test_labels)) [| Array.length test_labels; 10 |] in
+
+  (* Create datasets *)
+  let train_dataset = { data = train_data; label = train_labels } in
+  let test_dataset = { data = test_data; label = test_labels } in
+  (train_dataset, test_dataset)

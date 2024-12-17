@@ -1072,3 +1072,42 @@ let normalize t =
   let mean_vals = dmean t 0 in
   let std_vals = dstd t 0 in
   div (sub t mean_vals)  std_vals
+
+(* filepath: /home/wangrui/Desktop/OCaML/src/lib/ndarray.ml *)
+
+let conv2d input kernel stride padding =
+  let batch_size, in_channels, in_height, in_width = input.shape.(0), input.shape.(1), input.shape.(2), input.shape.(3) in
+  let out_channels, _, kernel_height, kernel_width = kernel.shape.(0), kernel.shape.(1), kernel.shape.(2), kernel.shape.(3) in
+
+  let out_height = (in_height - kernel_height + 2 * padding) / stride + 1 in
+  let out_width = (in_width - kernel_width + 2 * padding) / stride + 1 in
+
+  let output = zeros [| batch_size; out_channels; out_height; out_width |] in
+
+  for b = 0 to batch_size - 1 do
+    for oc = 0 to out_channels - 1 do
+      for oh = 0 to out_height - 1 do
+        for ow = 0 to out_width - 1 do
+          let h_start = oh * stride - padding in
+          let w_start = ow * stride - padding in
+          (* let h_end = h_start + kernel_height in *)
+          (* let w_end = w_start + kernel_width in *)
+
+          let sum = ref 0.0 in
+          for ic = 0 to in_channels - 1 do
+            for kh = 0 to kernel_height - 1 do
+              for kw = 0 to kernel_width - 1 do
+                let h = h_start + kh in
+                let w = w_start + kw in
+                if h >= 0 && h < in_height && w >= 0 && w < in_width then
+                  sum := !sum +. input.data.((b * in_channels + ic) * in_height * in_width + h * in_width + w) *.
+                                 kernel.data.((oc * in_channels + ic) * kernel_height * kernel_width + kh * kernel_width + kw)
+              done
+            done
+          done;
+          output.data.((b * out_channels + oc) * out_height * out_width + oh * out_width + ow) <- !sum
+        done
+      done
+    done
+  done;
+  output
