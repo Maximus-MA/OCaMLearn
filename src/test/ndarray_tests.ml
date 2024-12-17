@@ -1103,7 +1103,87 @@ let test_pad_shape_to () =
   Printf.printf "Passed: Pad Shape To - arr_shape Longer\n";
 
 ;;
+let test_conv2d () =
+  (* Define a simple input tensor (batch_size=1, in_channels=2, height=5, width=5) *)
+  let input_data = [|
+    1.0; 2.0; 3.0; 4.0; 5.0;
+    6.0; 7.0; 8.0; 9.0; 10.0;
+    11.0; 12.0; 13.0; 14.0; 15.0;
+    16.0; 17.0; 18.0; 19.0; 20.0;
+    21.0; 22.0; 23.0; 24.0; 25.0;
+    1.0; 1.0; 1.0; 1.0; 1.0;
+    1.0; 1.0; 1.0; 1.0; 1.0;
+    1.0; 1.0; 1.0; 1.0; 1.0;
+    1.0; 1.0; 1.0; 1.0; 1.0;
+    1.0; 1.0; 1.0; 1.0; 1.0
+  |] in
+  let input_shape = [| 1; 2; 5; 5 |] in
+  let input = Ndarray.create input_data input_shape in
 
+  (* Define a simple kernel (out_channels=2, in_channels=2, height=3, width=3) *)
+  let kernel_data = [|
+    1.0; 0.0; -1.0;
+    1.0; 0.0; -1.0;
+    1.0; 0.0; -1.0;
+    1.0; 0.0; -1.0;
+    1.0; 0.0; -1.0;
+    1.0; 0.0; -1.0;
+    0.5; 0.5; 0.5;
+    0.5; 0.5; 0.5;
+    0.5; 0.5; 0.5;
+    0.5; 0.5; 0.5;
+    0.5; 0.5; 0.5;
+    0.5; 0.5; 0.5
+  |] in
+  let kernel_shape = [| 2; 2; 3; 3 |] in
+  let kernel = Ndarray.create kernel_data kernel_shape in
+
+  (* Perform 2D convolution with stride=1 and padding=1 *)
+  let stride = 1 in
+  let padding = 1 in
+  let output = Ndarray.conv2d input kernel stride padding in
+
+  (* Print the output tensor *)
+  Printf.printf "Output shape: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_int output.shape)));
+  Printf.printf "Output data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod output.shape.(3) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) output.data;
+  Printf.printf "\n"
+
+let test_transpose_last_two_dims () =
+  (* Define a simple input tensor (batch_size=1, channels=1, height=3, width=4) *)
+  let input_data = [|
+    1.0; 2.0; 3.0; 4.0;
+    5.0; 6.0; 7.0; 8.0;
+    9.0; 10.0; 11.0; 12.0;
+    1.0; 2.0; 3.0; 4.0;
+    5.0; 6.0; 7.0; 8.0;
+    9.0; 10.0; 11.0; 12.0
+  |] in
+  let input_shape = [| 1; 2; 3; 4 |] in
+  let input = Ndarray.create input_data input_shape in
+
+  (* Perform transpose of the last two dimensions *)
+  let output = Ndarray.transpose_last_two_dims input in
+
+  (* Print the output tensor *)
+  Printf.printf "Input shape: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_int input.shape)));
+  Printf.printf "Input data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod input.shape.(3) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) input.data;
+  Printf.printf "\n\n";
+
+  Printf.printf "Output shape: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_int output.shape)));
+  Printf.printf "Output data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod output.shape.(3) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) output.data;
+  Printf.printf "\n"
 (* Main test function *)
 let () =
   Printf.printf "Start Test!";
@@ -1147,4 +1227,6 @@ let () =
   test_relu ();
   test_to_string ();
   test_pad_shape_to ();
+  test_conv2d ();
+  test_transpose_last_two_dims ();
 ;;

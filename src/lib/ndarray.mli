@@ -189,3 +189,5 @@ val normalize : t -> t
 val conv2d : t -> t -> int -> int -> t
 (** [conv2d input kernel stride padding] performs a 2D convolution on the input [input] with the given [kernel], [stride], and [padding].
     It returns the convolved output. *)
+val transpose_last_two_dims : t -> t
+(** [transpose_last_two_dims t] transposes the last two dimensions of the ndarray [t]. *)
