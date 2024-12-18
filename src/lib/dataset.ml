@@ -221,7 +221,7 @@ let load_mnist () =
   
     (* Calculate reduced size: 10% of the original training set *)
     let original_size = Array.length train_images in
-    let target_size = max 1 (original_size / 10) in  (* Ensure at least 1 sample *)
+    let target_size = max 1 (original_size) in  (* Ensure at least 1 sample *)
   
     (* Slice the first 10% of train_images and train_labels *)
     let reduced_train_images = Array.sub train_images 0 target_size in

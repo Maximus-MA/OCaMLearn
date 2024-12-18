@@ -214,3 +214,6 @@ val layerwise_convolution_with_doutput_as_kernel : t -> t -> int -> int -> t
     It returns a new ndarray with shape (batch_size, out_channel, input_channel, kernel_h, kernel_w), where 
     [kernel_h] and [kernel_w] are computed based on the input and output dimensions, and the convolution is performed 
     with the given [stride] and [padding]. *)
+
+val image_scale : t -> t
+(** [image_scale t] scales the image to [-1,1] *)

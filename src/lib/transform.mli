@@ -27,3 +27,6 @@ val flip : bool -> bool -> t
 (** [flip horizontal vertical] flips the input ndarray based on the specified [horizontal] and [vertical] options.
     If [horizontal] is true, the ndarray is flipped horizontally; if [vertical] is true, the ndarray is flipped vertically. 
     It returns a transformation that applies the flip operation. *)
+
+val image_scale : t
+(** [image_scale t] scales the image to [-1,1] *)

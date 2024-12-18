@@ -1,10 +1,10 @@
 (* src/ndarray.ml *)
 [@@@ocaml.warning "-27"]
 
-let print_shape shape =
+(* let print_shape shape =
   Printf.printf "[%s]\n"
     (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
-;;
+;; *)
 
 (* let print_data data =
   Printf.printf "[%s]\n"
@@ -1129,9 +1129,9 @@ let transpose_last_two_dims t =
   { data = new_data; shape = new_shape }
 
 let conv2d input kernel ~stride ~padding =
-  Printf.printf "start nd con2v\n";
-  print_shape input.shape;
-  print_shape kernel.shape;
+  (* Printf.printf "start nd con2v\n"; *)
+  (* print_shape input.shape; *)
+  (* print_shape kernel.shape; *)
 
   let batch_size, in_channels, in_height, in_width = input.shape.(0), input.shape.(1), input.shape.(2), input.shape.(3) in
   let out_channels, _, kernel_height, kernel_width = kernel.shape.(0), kernel.shape.(1), kernel.shape.(2), kernel.shape.(3) in
@@ -1165,8 +1165,8 @@ let conv2d input kernel ~stride ~padding =
       done
     done
   done;
-  Printf.printf "finish nd con2v\n";
-  print_shape output.shape;
+  (* Printf.printf "finish nd con2v\n"; *)
+  (* print_shape output.shape; *)
   output
 
     
@@ -1296,3 +1296,12 @@ let layerwise_convolution_with_doutput_as_kernel input doutput stride padding =
   done;
 
   output
+
+let image_scale t =
+  let normalized_data = Array.copy t.data in
+
+  for i = 0 to Array.length t.data - 1 do
+    normalized_data.(i) <- ((t.data.(i) /. 255.0) -. 0.5) /. 0.5
+  done;
+
+  {data = normalized_data; shape = t.shape}

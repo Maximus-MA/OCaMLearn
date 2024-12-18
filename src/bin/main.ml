@@ -1,8 +1,8 @@
 (* open Core *)
-let print_shape shape =
+(* let print_shape shape =
   Printf.printf "[%s]\n"
     (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
-;;
+;; *)
 (* let example1 () =
   let input = Tensor.ones [|2; 100|] in
   let model = Model.create_Sequential [
@@ -164,7 +164,7 @@ let example_iris () =
   in
 
   let train () =
-    for epoch = 1 to 20 do
+    for epoch = 1 to 30 do
       let total_loss = ref 0.0 in
       let total_batches = Dataloader.get_total_batches train_loader in
       for batch_idx = 0 to total_batches - 1 do
@@ -196,8 +196,8 @@ let example_mnist () =
   let train_dataset, test_dataset = Dataset.load_cnn_mnist () in
 
   (* Create data loaders *)
-  let train_loader = Dataloader.create train_dataset ~batch_size:256 ~shuffle:true ~transforms:[Transform.normalize] in
-  let test_loader = Dataloader.create test_dataset ~batch_size:1000 ~shuffle:false ~transforms:[Transform.normalize] in
+  let train_loader = Dataloader.create train_dataset ~batch_size:256 ~shuffle:true ~transforms:[Transform.image_scale; Transform.normalize] in
+  let test_loader = Dataloader.create test_dataset ~batch_size:1000 ~shuffle:false ~transforms:[Transform.image_scale; Transform.normalize] in
 
   (* Define the model *)
   (* let model = Model.create_Sequential [
@@ -211,17 +211,17 @@ let example_mnist () =
   let model = Model.create_Sequential [
     (* 第1层：卷积层 + ReLU 激活 *)
     Model.create_Conv2d ~in_channels:1 ~out_channels:2 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:false;
-    (* Model.create_ReLU ();
+    (* Model.create_ReLU (); *)
   
     (* 第2层：池化层 *)
-    Model.create_MeanPool2d ~kernel_size:2 ~stride:2;
+    (* Model.create_MeanPool2d ~kernel_size:2 ~stride:2; *)
   
     (* 第3层：卷积层 + ReLU 激活 *)
-    Model.create_Conv2d ~in_channels:3 ~out_channels:6 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:false;
-    Model.create_ReLU ();
+    (* Model.create_Conv2d ~in_channels:2 ~out_channels:4 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:false;
+    Model.create_ReLU (); *)
   
     (* 第4层：池化层 *)
-    Model.create_MeanPool2d ~kernel_size:2 ~stride:2; *)
+    (* Model.create_MeanPool2d ~kernel_size:2 ~stride:2; *)
   
     (* 第5层：Flatten 展平层 *)
     Model.create_Flatten ();
@@ -232,7 +232,7 @@ let example_mnist () =
   
   (* Define the loss function and optimizer *)
   let loss_func = Model.create_CrossEntropy () in
-  let optimizer = Optimizer.create_SGD ~params:Model.(model.parameters) ~lr:0.01 in
+  let optimizer = Optimizer.create_SGD ~params:Model.(model.parameters) ~lr:0.02 in
 
   (* Define the test function *)
   let test () =
@@ -258,32 +258,38 @@ let example_mnist () =
   (* Define the train function *)
   Printf.printf "Start Training\n";
   let train () =
-    for epoch = 1 to 20 do
+    for epoch = 1 to 2 do
       Printf.printf "Epoch %d/%d\n" epoch 20;
       flush stdout;
       let total_loss = ref 0.0 in
       let total_batches = Dataloader.get_total_batches train_loader in
       for batch_idx = 0 to total_batches - 1 do
-        Printf.printf "Batch %d/%d\n" batch_idx total_batches;
+        let correct = ref 0 in
+        let total = ref 0 in
+        (* Printf.printf "Batch %d/%d\n" batch_idx total_batches; *)
         flush stdout;
         let batch = Dataloader.get_batch train_loader batch_idx in
-        (* Printf.printf "111\n"; *)
-        print_shape batch.data.data.shape;
         let output = Model.forward model [batch.data] in
-        (* Printf.printf "222\n"; *)
         let loss = Model.forward loss_func [output; batch.label] in
-        (* Printf.printf "333\n"; *)
         total_loss := !total_loss +. loss.data.data.(0);
-        (* Printf.printf "444\n"; *)
         optimizer.zero_grad ();
-        (* Printf.printf "555\n"; *)
-        
         Utils.backprop loss;
-        Printf.printf "loss: %s\n" (Tensor.to_string loss);
-        
-        (* Printf.printf "666\n"; *)
+        (* Printf.printf "loss: %s\n" (Tensor.to_string loss); *)
         optimizer.step ();
-        (* Printf.printf "777\n" *)
+
+        (* Calculate accuracy for the current batch *)
+        let output_labels = Ndarray.dargmax output.data 1 in
+        let target_labels = Ndarray.dargmax batch.label.data 1 in
+
+        (* Calculate the number of correct predictions *)
+        for i = 0 to Array.length output_labels.data - 1 do
+          if int_of_float output_labels.data.(i) = int_of_float target_labels.data.(i) then
+            incr correct;
+          incr total;
+        done;
+        let accuracy = (float_of_int !correct) /. (float_of_int !total) *. 100.0 in
+        Printf.printf "Batch: %d/%d\n, Loss: %s, Train Accuracy: %.2f%%\n" batch_idx total_batches (Tensor.to_string loss) accuracy;
+        flush stdout;
       done;
       let avg_loss = !total_loss /. float_of_int total_batches in
       let test_acc = test () in

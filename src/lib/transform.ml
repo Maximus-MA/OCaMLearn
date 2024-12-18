@@ -28,3 +28,6 @@ let scale x y =
 
 let flip horizontal vertical =
   not_implemented "flip"
+
+let image_scale t =
+  Ndarray.image_scale t
