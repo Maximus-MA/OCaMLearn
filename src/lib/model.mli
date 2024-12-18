@@ -41,11 +41,11 @@ val create_ReLU : unit -> t
 val create_Sigmoid : unit -> t
 (** [create_Sigmoid ()] creates a Sigmoid activation layer that applies the Sigmoid activation function element-wise. *)
 
-val create_LeakyReLU : ?alpha:float -> t
+(* val create_LeakyReLU : ?alpha:float -> t
 (** [create_LeakyReLU ?alpha] creates a Leaky ReLU activation layer that applies the Leaky ReLU activation function element-wise.
-    Optionally, a negative slope [alpha] can be specified. *)
+    Optionally, a negative slope [alpha] can be specified. *) *)
 
-val create_Tanh : unit -> t
+(* val create_Tanh : unit -> t *)
 (** [create_Tanh ()] creates a Tanh activation layer that applies the Tanh activation function element-wise. *)
 
 val create_Softmax : unit -> t

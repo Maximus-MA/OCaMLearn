@@ -16,6 +16,9 @@ val create : data:ndarray -> requires_grad:bool -> prev:t list -> t
 val from_ndarray : ?requires_grad:bool -> ndarray -> t
 (** [from_ndarray ?requires_grad data] creates a tensor from the given [data] array, with an optional [requires_grad] flag. *)
 
+val scaler : float -> t
+(** [scaler x] creates a tensor with a single scalar value [x]. *)
+
 val zeros : int array -> t
 (** [zeros shape] creates a tensor filled with zeros, of specified [shape]. *)
 
