@@ -25,8 +25,9 @@ val load_csv : string -> int -> (string -> int) -> int -> t
 (** [load_csv file_path label_col label_string_to_int num_classes] loads a CSV file and converts it into a dataset.
     The labels are converted to one-hot encoded arrays. *)
 
-val load_mnist : unit -> t*t
+val load_mnist : bool -> t*t
 (** [load_mnist ()] loads the MNIST dataset and returns a tuple containing the training and test datasets. *)
 
 val load_cnn_mnist : unit -> t*t
 (** [load_cnn_mnist ()] loads the MNIST dataset for cnn and returns a tuple containing the training and test datasets. *)
+
