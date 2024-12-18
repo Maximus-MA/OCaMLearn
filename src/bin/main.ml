@@ -210,24 +210,24 @@ let example_mnist () =
   Printf.printf "Create Model\n";
   let model = Model.create_Sequential [
     (* 第1层：卷积层 + ReLU 激活 *)
-    Model.create_Conv2d ~in_channels:1 ~out_channels:32 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:true;
-    Model.create_ReLU ();
+    Model.create_Conv2d ~in_channels:1 ~out_channels:2 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:false;
+    (* Model.create_ReLU ();
   
     (* 第2层：池化层 *)
     Model.create_MeanPool2d ~kernel_size:2 ~stride:2;
   
     (* 第3层：卷积层 + ReLU 激活 *)
-    Model.create_Conv2d ~in_channels:32 ~out_channels:64 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:true;
+    Model.create_Conv2d ~in_channels:3 ~out_channels:6 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:false;
     Model.create_ReLU ();
   
     (* 第4层：池化层 *)
-    Model.create_MeanPool2d ~kernel_size:2 ~stride:2;
+    Model.create_MeanPool2d ~kernel_size:2 ~stride:2; *)
   
     (* 第5层：Flatten 展平层 *)
     Model.create_Flatten ();
   
     (* 第6层：全连接层1 + ReLU *)
-    Model.create_Linear ~in_features:(7 * 7 * 64) ~out_features:10 ~bias:true;
+    Model.create_Linear ~in_features:(2*28*28) ~out_features:10 ~bias:true;
   ] in
   
   (* Define the loss function and optimizer *)
@@ -267,22 +267,23 @@ let example_mnist () =
         Printf.printf "Batch %d/%d\n" batch_idx total_batches;
         flush stdout;
         let batch = Dataloader.get_batch train_loader batch_idx in
-        Printf.printf "111\n";
+        (* Printf.printf "111\n"; *)
         print_shape batch.data.data.shape;
         let output = Model.forward model [batch.data] in
-        Printf.printf "222\n";
+        (* Printf.printf "222\n"; *)
         let loss = Model.forward loss_func [output; batch.label] in
-        Printf.printf "333\n";
+        (* Printf.printf "333\n"; *)
         total_loss := !total_loss +. loss.data.data.(0);
-        Printf.printf "444\n";
+        (* Printf.printf "444\n"; *)
         optimizer.zero_grad ();
-        Printf.printf "555\n";
+        (* Printf.printf "555\n"; *)
         
         Utils.backprop loss;
+        Printf.printf "loss: %s\n" (Tensor.to_string loss);
         
-        Printf.printf "666\n";
+        (* Printf.printf "666\n"; *)
         optimizer.step ();
-        Printf.printf "777\n"
+        (* Printf.printf "777\n" *)
       done;
       let avg_loss = !total_loss /. float_of_int total_batches in
       let test_acc = test () in

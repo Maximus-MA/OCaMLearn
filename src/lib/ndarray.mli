@@ -194,6 +194,23 @@ val conv2d : t -> t -> stride: int -> padding: int -> t
 val transpose_last_two_dims : t -> t
 (** [transpose_last_two_dims t] transposes the last two dimensions of the ndarray [t]. *)
 
+val flip_and_swap_kernel : t -> t
+(** [flip_and_swap_kernel kernel] swaps the first two dimensions of the input [kernel] and rotates the last two dimensions by 180 degrees.
+    It returns a new ndarray with the shape (in_channels, out_channels, kernel_height, kernel_width). *)
 
-val rotate180 : t -> t
-(** [rotate180 t] rotates the kernel [t] by 180 degrees. *)
+val expand_doutput : t -> int -> t
+(** [expand_doutput doutput input_channels] expands the input tensor [doutput] by adding a new dimension for [input_channels].
+    It returns a new ndarray with shape (batch_size, out_channels, input_channels, output_h, output_w), where 
+    the values of [doutput] are replicated along the [input_channels] dimension. *)
+
+val expand_input : t -> int -> t
+(** [expand_input input out_channel] expands the input tensor [input] by adding a new dimension for [out_channel].
+    It returns a new ndarray with shape (batch_size, out_channel, input_channels, input_h, input_w), where 
+    the values of [input] are replicated along the [out_channel] dimension. *)
+
+val layerwise_convolution_with_doutput_as_kernel : t -> t -> int -> int -> t
+(** [layerwise_convolution_with_doutput_as_kernel input doutput stride padding] performs a layerwise convolution operation
+    where [doutput] is used as the kernel and convolves with [input] tensor for each channel separately.
+    It returns a new ndarray with shape (batch_size, out_channel, input_channel, kernel_h, kernel_w), where 
+    [kernel_h] and [kernel_w] are computed based on the input and output dimensions, and the convolution is performed 
+    with the given [stride] and [padding]. *)

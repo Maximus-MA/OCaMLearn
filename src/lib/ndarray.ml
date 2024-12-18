@@ -1170,88 +1170,129 @@ let conv2d input kernel ~stride ~padding =
   output
 
     
-(* let conv2d input kernel ~stride ~padding =
-  let batch_size, in_channels, in_height, in_width = input.shape.(0), input.shape.(1), input.shape.(2), input.shape.(3) in
-  let out_channels, _, kernel_height, kernel_width = kernel.shape.(0), kernel.shape.(1), kernel.shape.(2), kernel.shape.(3) in
+let flip_and_swap_kernel kernel =
+  let out_channels = kernel.shape.(0) in
+  let in_channels = kernel.shape.(1) in
+  let kernel_height = kernel.shape.(2) in
+  let kernel_width = kernel.shape.(3) in
 
-  let out_height = (in_height - kernel_height + 2 * padding) / stride + 1 in
-  let out_width = (in_width - kernel_width + 2 * padding) / stride + 1 in
+  (* 创建一个新 ndarray，交换前两维度 *)
+  let flipped_kernel = zeros [| in_channels; out_channels; kernel_height; kernel_width |] in
 
-  let output = zeros [| batch_size; out_channels; out_height; out_width |] in
-
-  for b = 0 to batch_size - 1 do
-    for oc = 0 to out_channels - 1 do
-      for oh = 0 to out_height - 1 do
-        for ow = 0 to out_width - 1 do
-          let h_start = oh * stride - padding in
-          let w_start = ow * stride - padding in
-
-          let sum = ref 0.0 in
-          for ic = 0 to in_channels - 1 do
-            for kh = 0 to kernel_height - 1 do
-              for kw = 0 to kernel_width - 1 do
-                let h = h_start + kh in
-                let w = w_start + kw in
-                if h >= 0 && h < in_height && w >= 0 && w < in_width then
-                  sum := !sum +. input.data.((b * in_channels + ic) * in_height * in_width + h * in_width + w) *.
-                                 kernel.data.((oc * in_channels + ic) * kernel_height * kernel_width + kh * kernel_width + kw)
-              done
-            done
-          done;
-          output.data.((b * out_channels + oc) * out_height * out_width + oh * out_width + ow) <- !sum
+  (* 填充新 ndarray，旋转最后两个维度 *)
+  for oc = 0 to out_channels - 1 do
+    for ic = 0 to in_channels - 1 do
+      for kh = 0 to kernel_height - 1 do
+        for kw = 0 to kernel_width - 1 do
+          (* 旋转 180 度对应的索引 *)
+          let flipped_kh = kernel_height - 1 - kh in
+          let flipped_kw = kernel_width - 1 - kw in
+          (* 交换前两维度，并修复索引计算 *)
+          flipped_kernel.data.((ic * out_channels + oc) * kernel_height * kernel_width + flipped_kh * kernel_width + flipped_kw) <-
+            kernel.data.((oc * in_channels + ic) * kernel_height * kernel_width + kh * kernel_width + kw)
         done
       done
     done
   done;
-  output *)
+  flipped_kernel
+  
+let expand_doutput doutput input_channels =
+  let batch_size = doutput.shape.(0) in
+  let out_channels = doutput.shape.(1) in
+  let out_h = doutput.shape.(2) in
+  let out_w = doutput.shape.(3) in
 
-  (* let rotate180 t =
-    let ndim = Array.length t.shape in
-    let new_shape = Array.copy t.shape in
-    new_shape.(ndim - 1) <- t.shape.(ndim - 2);
-    new_shape.(ndim - 2) <- t.shape.(ndim - 1);
-    let new_data = Array.make (Array.fold_left ( * ) 1 new_shape) 0.0 in
+  (* 创建一个新 ndarray，形状为 (batch_size, out_channel, input_channel, out_h, out_w) *)
+  let expanded = zeros [| batch_size; out_channels; input_channels; out_h; out_w |] in
 
-    let in_height = t.shape.(ndim - 2) in
-    let in_width = t.shape.(ndim - 1) in
-    let out_height = new_shape.(ndim - 2) in
-    let out_width = new_shape.(ndim - 1) in
-
-    for i = 0 to (Array.length t.data / (in_height * in_width)) - 1 do
-      for h = 0 to in_height - 1 do
-        for w = 0 to in_width - 1 do
-          let new_h = w in
-          let new_w = h in
-          let old_idx = i * in_height * in_width + h * in_width + w in
-          let new_idx = i * out_height * out_width + new_h * out_width + new_w in
-          new_data.(new_idx) <- t.data.(old_idx)
-        done
-      done
-    done;
-    { data = new_data; shape = new_shape }   *)
-
-    let rotate180 kernel =
-      let out_channels = kernel.shape.(0) in
-      let in_channels = kernel.shape.(1) in
-      let kernel_height = kernel.shape.(2) in
-      let kernel_width = kernel.shape.(3) in
-    
-      (* 创建一个新 ndarray，交换前两维度 *)
-      let flipped_kernel = zeros [| in_channels; out_channels; kernel_height; kernel_width |] in
-    
-      (* 填充新 ndarray，旋转最后两个维度 *)
-      for oc = 0 to out_channels - 1 do
-        for ic = 0 to in_channels - 1 do
-          for kh = 0 to kernel_height - 1 do
-            for kw = 0 to kernel_width - 1 do
-              (* 旋转 180 度对应的索引 *)
-              let flipped_kh = kernel_height - 1 - kh in
-              let flipped_kw = kernel_width - 1 - kw in
-              (* 交换前两维度，并修复索引计算 *)
-              flipped_kernel.data.((ic * out_channels + oc) * kernel_height * kernel_width + flipped_kh * kernel_width + flipped_kw) <-
-                kernel.data.((oc * in_channels + ic) * kernel_height * kernel_width + kh * kernel_width + kw)
-            done
+  (* 遍历 doutput 并在新维度中复制 *)
+  for b = 0 to batch_size - 1 do
+    for oc = 0 to out_channels - 1 do
+      for ic = 0 to input_channels - 1 do
+        for h = 0 to out_h - 1 do
+          for w = 0 to out_w - 1 do
+            expanded.data.((((b * out_channels + oc) * input_channels + ic) * out_h + h) * out_w + w) <-
+              doutput.data.(((b * out_channels + oc) * out_h + h) * out_w + w)
           done
         done
-      done;
-      flipped_kernel
+      done
+    done
+  done;
+  expanded
+
+let expand_input input out_channel =
+  let batch_size = input.shape.(0) in
+  let input_channels = input.shape.(1) in
+  let out_h = input.shape.(2) in
+  let out_w = input.shape.(3) in
+
+  (* 创建新的张量，形状为 (batch_size, out_channel, input_channel, outh, outw) *)
+  let expanded_input = zeros [|batch_size; out_channel; input_channels; out_h; out_w|] in
+
+  (* 对每个 batch 和每个 output_channel 进行复制 *)
+  for b = 0 to batch_size - 1 do
+    for oc = 0 to out_channel - 1 do
+      for ic = 0 to input_channels - 1 do
+        for h = 0 to out_h - 1 do
+          for w = 0 to out_w - 1 do
+            (* 将 input 的数据复制到 expanded_input 对应位置 *)
+            expanded_input.data.((((b * out_channel + oc) * input_channels + ic) * out_h + h) * out_w + w) <-
+              input.data.(((b * input_channels + ic) * out_h + h) * out_w + w)
+          done
+        done
+      done
+    done
+  done;
+
+  expanded_input
+
+let layerwise_convolution_with_doutput_as_kernel input doutput stride padding =
+  let batch_size = input.shape.(0) in
+  let out_channel = input.shape.(1) in
+  let input_channel = input.shape.(2) in
+  let input_h = input.shape.(3) in
+  let input_w = input.shape.(4) in
+
+  let output_h = doutput.shape.(3) in
+  let output_w = doutput.shape.(4) in
+
+  (* 计算卷积核的高度和宽度 *)
+  let kernel_h = (input_h - output_h + 2 * padding) / stride +1 in
+  let kernel_w = (input_w - output_w + 2 * padding) / stride +1 in
+
+  (* 输出张量，形状为 (batch_size, out_channel, input_channel, kernel_h, kernel_w) *)
+  let output = zeros [| batch_size; out_channel; input_channel; kernel_h; kernel_w |] in
+
+  (* 执行卷积操作 *)
+  for b = 0 to batch_size - 1 do
+    for oc = 0 to out_channel - 1 do
+      for ic = 0 to input_channel - 1 do
+        for kh = 0 to kernel_h - 1 do
+          for kw = 0 to kernel_w - 1 do
+            (* 计算卷积操作的开始位置 *)
+            let h_start = kh * stride - padding in
+            let w_start = kw * stride - padding in
+
+            (* 计算每个位置的卷积结果 *)
+            let sum = ref 0.0 in
+            for dkh = 0 to output_h - 1 do
+              for dkw = 0 to output_w - 1 do
+                (* 检查是否超出输入范围 *)
+                let h_pos = h_start + dkh in
+                let w_pos = w_start + dkw in
+                if h_pos >= 0 && h_pos < input_h && w_pos >= 0 && w_pos < input_w then
+                  (* 进行卷积操作 *)
+                  sum := !sum +. input.data.((((b * out_channel + oc) * input_channel + ic) * input_h + h_pos) * input_w + w_pos) *. 
+                            doutput.data.((((b * out_channel + oc) * input_channel + ic) * output_h + dkh) * output_w + dkw)
+              done
+            done;
+
+            (* 将卷积结果放到输出张量中 *)
+            output.data.((((b * out_channel + oc) * input_channel + ic) * kernel_h + kh) * kernel_w + kw) <- !sum
+          done
+        done
+      done
+    done
+  done;
+
+  output
