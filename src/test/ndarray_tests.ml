@@ -1141,7 +1141,7 @@ let test_conv2d () =
   (* Perform 2D convolution with stride=1 and padding=1 *)
   let stride = 1 in
   let padding = 1 in
-  let output = Ndarray.conv2d input kernel stride padding in
+  let output = Ndarray.conv2d input kernel ~stride ~padding in
 
   (* Print the output tensor *)
   Printf.printf "Output shape: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_int output.shape)));

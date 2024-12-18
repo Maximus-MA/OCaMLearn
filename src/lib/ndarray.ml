@@ -1100,7 +1100,7 @@ let transpose_last_two_dims t =
   { data = new_data; shape = new_shape }
 
 
-let conv2d input kernel stride padding =
+let conv2d input kernel ~stride ~padding =
   let batch_size, in_channels, in_height, in_width = input.shape.(0), input.shape.(1), input.shape.(2), input.shape.(3) in
   let out_channels, _, kernel_height, kernel_width = kernel.shape.(0), kernel.shape.(1), kernel.shape.(2), kernel.shape.(3) in
 
@@ -1134,3 +1134,28 @@ let conv2d input kernel stride padding =
     done
   done;
   output
+
+  let rotate180 t =
+    let ndim = Array.length t.shape in
+    let new_shape = Array.copy t.shape in
+    new_shape.(ndim - 1) <- t.shape.(ndim - 2);
+    new_shape.(ndim - 2) <- t.shape.(ndim - 1);
+    let new_data = Array.make (Array.fold_left ( * ) 1 new_shape) 0.0 in
+
+    let in_height = t.shape.(ndim - 2) in
+    let in_width = t.shape.(ndim - 1) in
+    let out_height = new_shape.(ndim - 2) in
+    let out_width = new_shape.(ndim - 1) in
+
+    for i = 0 to (Array.length t.data / (in_height * in_width)) - 1 do
+      for h = 0 to in_height - 1 do
+        for w = 0 to in_width - 1 do
+          let new_h = w in
+          let new_w = h in
+          let old_idx = i * in_height * in_width + h * in_width + w in
+          let new_idx = i * out_height * out_width + new_h * out_width + new_w in
+          new_data.(new_idx) <- t.data.(old_idx)
+        done
+      done
+    done;
+    { data = new_data; shape = new_shape }  

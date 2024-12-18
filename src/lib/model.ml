@@ -24,15 +24,35 @@ let get_parameters layer =
 (* ignore bias option *)
 let create_Linear ~in_features ~out_features ~bias =
   let w = Tensor.rand [|in_features; out_features|] in
-  let b = Tensor.rand [|1; out_features|] in
-  let parameters = [w; b] in
-  let forward_fn inputs =
-    let x = List.hd_exn inputs in
-    Tensor.(add (matmul x w) b) in
-  create ~parameters ~forward_fn
+  if bias then
+    let b = Tensor.rand [|1; out_features|] in
+    let parameters = [w; b] in
+    let forward_fn inputs =
+      let x = List.hd_exn inputs in
+      Tensor.(add (matmul x w) b) in
+    create ~parameters ~forward_fn
+  else
+    let parameters = [w] in
+    let forward_fn inputs =
+      let x = List.hd_exn inputs in
+      Tensor.matmul x w in
+    create ~parameters ~forward_fn
 
-let create_Conv2d ~in_channels ~out_channels ~kernel_size ~stride ~padding =
-  not_implemented "create_Conv2d"
+let create_Conv2d ~in_channels ~out_channels ~kernel_size ~stride ~padding ~bias =
+  let w = Tensor.rand [|out_channels; in_channels; kernel_size; kernel_size|] in
+  if bias then
+    let b = Tensor.rand [|1; out_channels|] in
+    let parameters = [w; b] in
+    let forward_fn inputs =
+      let x = List.hd_exn inputs in
+      Tensor.(add (conv2d x w ~stride ~padding) b) in
+    create ~parameters ~forward_fn
+  else
+    let parameters = [w] in
+    let forward_fn inputs =
+      let x = List.hd_exn inputs in
+      Tensor.conv2d x w ~stride ~padding in
+    create ~parameters ~forward_fn
 
 let create_Flatten () =
   let parameters = [] in

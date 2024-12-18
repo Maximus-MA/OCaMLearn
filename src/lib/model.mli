@@ -19,12 +19,13 @@ val create_Linear : in_features:int -> out_features:int -> bias:bool -> t
     output features [out_features], and an optional bias term [bias]. *)
 
 val create_Conv2d : 
-  in_channels:int -> 
-  out_channels:int -> 
-  kernel_size:int -> 
-  stride:int -> 
-  padding:int -> 
-  t
+    in_channels:int -> 
+    out_channels:int -> 
+    kernel_size:int -> 
+    stride:int -> 
+    padding:int -> 
+    bias:bool ->
+    t
 (** [create_Conv2d in_channels out_channels kernel_size stride padding] creates a new 2D convolutional layer with the specified number of input channels [in_channels],
     output channels [out_channels], kernel size [kernel_size], stride [stride], and padding [padding]. *)
 

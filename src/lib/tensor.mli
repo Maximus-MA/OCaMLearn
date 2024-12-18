@@ -203,3 +203,6 @@ val neg : t -> t
 (** [neg t] negates each element of tensor [t] element-wise.
     Each element of the tensor is multiplied by -1. *)
 
+val conv2d : t -> t -> stride: int -> padding: int -> t
+(** [conv2d input kernel stride padding] performs a 2D convolution operation on the input tensor [input] using the given [kernel].
+    The [stride] and [padding] arguments control the sliding stride and padding of the convolution operation. *)

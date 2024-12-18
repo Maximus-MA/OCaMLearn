@@ -546,6 +546,23 @@ let slice t ranges  =
   res.backward_fn <- None;
   res
 
+let conv2d t kernel ~stride ~padding =
+  let data = Ndarray.conv2d t.data kernel.data ~stride ~padding in
+  let requires_grad = t.requires_grad || kernel.requires_grad in
+  let prev = [t; kernel] in
+  let res = create ~data ~requires_grad ~prev in
+  res.backward_fn <- Some (fun () ->
+    let grad_output = res.grad in
+    if t.requires_grad then
+      let grad_t = Ndarray.conv2d grad_output (Ndarray.rotate180 kernel.data) ~stride ~padding in
+      accumulate_grad t grad_t;
+    if kernel.requires_grad then
+      let grad_kernel = Ndarray.conv2d (Ndarray.rotate180 t.data) grad_output ~stride ~padding in
+      accumulate_grad kernel grad_kernel
+  );
+  res
+
+
 (* 
   type t = {
   mutable data: ndarray;                    (* The tensor's data as an ndarray *)
