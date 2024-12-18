@@ -1100,6 +1100,7 @@ let transpose_last_two_dims t =
   { data = new_data; shape = new_shape }
 
 let conv2d input kernel ~stride ~padding =
+  Printf.printf "start nd con2v\n";
   let batch_size, in_channels, in_height, in_width = input.shape.(0), input.shape.(1), input.shape.(2), input.shape.(3) in
   let out_channels, _, kernel_height, kernel_width = kernel.shape.(0), kernel.shape.(1), kernel.shape.(2), kernel.shape.(3) in
 
@@ -1132,6 +1133,7 @@ let conv2d input kernel ~stride ~padding =
       done
     done
   done;
+  Printf.printf "finish nd con2v\n";
   output
 
     
