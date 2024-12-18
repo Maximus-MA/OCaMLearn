@@ -9,10 +9,6 @@ type t = {
   forward_fn: tensor list -> tensor; (* Forward function for layer computation *)
 } [@@deriving show]
 
-(* Placeholder for unimplemented functions *)
-(* let not_implemented feature_name =
-  failwith (feature_name ^ " is not yet implemented") *)
-
 let create ~parameters ~forward_fn =
   { parameters; forward_fn }
 
@@ -39,9 +35,7 @@ let create_Linear ~in_features ~out_features ~bias =
     create ~parameters ~forward_fn
 
 let create_Conv2d ~in_channels ~out_channels ~kernel_size ~stride ~padding ~bias =
-  Printf.printf "create conv2d\n";
   let w = Tensor.rand [|out_channels; in_channels; kernel_size; kernel_size|] in
-  Printf.printf "Kernel shape %d\n" (Array.length w.data.shape);
   if bias then
     let b = Tensor.rand [|out_channels; 1; 1|] in
     let parameters = [w; b] in
@@ -112,9 +106,7 @@ let create_CrossEntropy () =
     let logits = List.nth_exn inputs 0 in
     let targets = List.nth_exn inputs 1 in
     let log_probs = Tensor.log_softmax logits in
-  (* Printf.printf "hello"; *)
     let loss = Tensor.neg (Tensor.mean ~dim:0 (Tensor.dsum (Tensor.mul targets log_probs) (Ndarray.dim logits.data - 1))) in
     loss
   in
   create ~parameters:[] ~forward_fn
- 

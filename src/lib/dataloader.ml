@@ -1,5 +1,3 @@
-(* src/dataloader.ml *)
-
 [@@@ocaml.warning "-27"]
 
 type ndarray = Ndarray.t
@@ -21,9 +19,6 @@ type t = {
   total_batches : int;       (* Total number of batches in the dataset *)
 }
 
-(* Placeholder for unimplemented functions *)
-(* let not_implemented feature_name =
-  failwith (feature_name ^ " is not yet implemented") *)
 
 let create ?(transforms = []) dataset ~batch_size ~shuffle  =
   let apply_transforms (ndarray: ndarray) (transforms: transform list) =

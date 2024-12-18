@@ -1,14 +1,7 @@
-(* src/utils.ml *)
-
 [@@@ocaml.warning "-27"]
 open Core
 
 type tensor = Tensor.t
-
-(* Placeholder for unimplemented functions *)
-(* let not_implemented feature_name =
-  failwith (feature_name ^ " is not yet implemented") *)
-
 
 let backprop ts =
   Tensor.set_grad ts (Ndarray.scaler 1.0);

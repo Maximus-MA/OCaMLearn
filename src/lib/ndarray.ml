@@ -1,4 +1,3 @@
-(* src/ndarray.ml *)
 [@@@ocaml.warning "-27"]
 
 (* let print_shape shape =
@@ -123,8 +122,6 @@ let add a b =
 
 (* Broadcast subtraction *)
 let sub a b =
-  (* print_shape a.shape; *)
-  (* print_shape b.shape; *)
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
   let shape = broadcast_shape a.shape b.shape in
@@ -172,8 +169,6 @@ let sub a b =
 
 (* Broadcasting multiplication *)
 let mul a b =
-  (* print_shape a.shape; *)
-  (* print_shape b.shape; *)
   if not (is_broadcastable a.shape b.shape) then
     failwith "Shapes are not broadcastable";
   let shape = broadcast_shape a.shape b.shape in
@@ -270,8 +265,6 @@ let div a b =
 let matmul a b =
     let a_shape = a.shape in
     let b_shape = b.shape in
-    (* print_shape a_shape; *)
-    (* print_shape b_shape; *)
     let a_dim = Array.length a_shape in
     let b_dim = Array.length b_shape in
   
@@ -359,13 +352,8 @@ let matmul a b =
       for k = 0 to a_k - 1 do
         a_indices.(Array.length a_indices - 1) <- k;
         b_indices.(Array.length b_indices - 2) <- k;
-        (* print_int_array a_indices; *)
-        (* print_int_array b_indices; *)
         let a_idx = compute_index a_strides a_shape_broadcasted a_indices mod a_size in
         let b_idx = compute_index b_strides b_shape_broadcasted b_indices mod b_size in
-        (* print_int_array a_strides; *)
-        (* print_int_array a_shape_broadcasted; *)
-        (* Printf.printf "idx_a = %d, idx_b = %d\n" a_idx b_idx; *)
         let a_val = a.data.(a_idx) in
         let b_val = b.data.(b_idx) in
   
@@ -410,17 +398,8 @@ let box_muller () =
   let r = sqrt (-2.0 *. log u1) in
   let theta = 2.0 *. Float.pi *. u2 in
   let z1 = r *. cos theta in
-  (* 返回标准正态分布样本 *)
   z1
 
-(* 生成范围在 [-1, 1] 的正态分布样本 *)
-(* let rec generate_normal () =
-  let sample = box_muller () in
-  if sample >= -1.0 && sample <= 1.0 then
-    sample
-  else
-    generate_normal () *)
-(* Generate a random value ndarray *)
 let rand (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   let data = Array.init size (fun _ -> (Random.float 2.0) -. 1.0) in
@@ -485,9 +464,9 @@ let at arr indices =
 
 (* reshape function *)
 let reshape (arr: t) (new_shape: int array) : t =
-  let old_size = numel arr.shape in  (* 原始数据总元素个数 *)
+  let old_size = numel arr.shape in  (* Total number of elements in the original data *)
 
-  (* 统计 new_shape 中的 -1 并计算已知维度的乘积 *)
+  (* Count the number of -1 in new_shape and calculate the product of known dimensions *)
   let num_neg_ones = ref 0 in
   let known_size = ref 1 in
   Array.iter (fun dim ->
@@ -496,11 +475,11 @@ let reshape (arr: t) (new_shape: int array) : t =
     else failwith "Reshape error: dimensions must be positive or -1"
   ) new_shape;
 
-  (* 检查 -1 的个数是否合理 *)
+  (* Check if the number of -1s is valid *)
   if !num_neg_ones > 1 then
     failwith "Reshape error: only one dimension can be inferred (-1)";
 
-  (* 计算 -1 所代表的维度 *)
+  (* Calculate the dimension represented by -1 *)
   let inferred_shape =
     if !num_neg_ones = 1 then
       let inferred_dim = old_size / !known_size in
@@ -511,19 +490,14 @@ let reshape (arr: t) (new_shape: int array) : t =
       new_shape
   in
 
-
-  (* 验证最终的元素总数 *)
+  (* Verify the total number of elements in the final shape *)
   let new_size = numel inferred_shape in
   if old_size <> new_size then
     failwith "Reshape error: total number of elements must remain unchanged";
 
-  (* 返回新的张量结构 *)
+  (* Return the new tensor structure *)
   { data = arr.data; shape = inferred_shape }
 ;;
-
-
-
-(* ------------------------------------------------------------------------------------------- *)
 
 (* Updates the element at a specified index in the ndarray *)
 let set t idx value =
@@ -727,10 +701,8 @@ let dsum t dim =
 let dmean t dim =
   let shape = t.shape in
   let ndim = Array.length shape in
-  (* print_shape t.shape; *)
   if dim < 0 || dim >= ndim then failwith "Dimension out of range";
   let new_shape = Array.init (ndim - 1) (fun i -> if i < dim then shape.(i) else shape.(i + 1)) in
-  (* print_shape new_shape; *)
   let num_new_elements = Array.fold_left ( * ) 1 new_shape in
   let result_data = Array.make num_new_elements 0.0 in
   let count = float_of_int shape.(dim) in
@@ -905,6 +877,7 @@ let dargmax t dim =
     result_data.(idx) <- float_of_int !argmax_idx
   done;
   create result_data new_shape
+
 let dmin t dim =
   let shape = t.shape in
   let ndim = Array.length shape in
@@ -955,16 +928,12 @@ let exp t =
     shape = Array.copy t.shape;
   }
 
-(** [exp t] computes the exponential of each element in [t]. *)
-
 (* Element-wise natural logarithm *)
 let log t =
   {
     data = Array.map log t.data;
     shape = Array.copy t.shape;
   }
-
-(** [log t] computes the natural logarithm of each element in [t]. *)
 
 (* Element-wise square root *)
 let sqrt t =
@@ -973,16 +942,12 @@ let sqrt t =
     shape = Array.copy t.shape;
   }
 
-(** [sqrt t] computes the square root of each element in [t]. *)
-
 (* Element-wise power *)
 let pow t x =
   {
     data = Array.map (fun y -> y ** x) t.data;
     shape = Array.copy t.shape;
   }
-
-(** [pow t x] raises each element in [t] to the power of [x]. *)
 
 (* Adds a new dimension of size 1 at the specified dimension *)
 let expand_dims t dim =
@@ -1010,27 +975,12 @@ let squeeze t =
 
 (** [squeeze t] removes dimensions of size 1 from [t]. *)
 
-
-(* #TODO *)
 let map (arr: t) ~f :t= 
-  {data= Array.map f arr.data; shape= arr.shape}
+  {data = Array.map f arr.data; shape= arr.shape}
+let negate arr =
+  {data = Array.map (fun x -> -.x) arr.data; shape = arr.shape }
 
-(* Reduction functions *)
-(* let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
-  let arr_shape = arr.shape in
-  print_shape arr.shape;
-  print_shape target_shape;
-  if Array.length arr_shape <> Array.length target_shape then
-    failwith "Shapes must have the same number of dimensions for reduce_sum_to_shape";
-  let axes_to_reduce = List.filter_map (fun (i, (dim_arr, dim_target)) ->
-    if dim_arr <> dim_target then Some i else None
-  ) (List.mapi (fun i dims -> (i, dims)) (Array.to_list (Array.combine arr_shape target_shape))) in
-  List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce *)
-
-  let negate arr =
-    { data = Array.map (fun x -> -.x) arr.data; shape = arr.shape }
-
-  (* Helper function to prepend ones to a shape array to match ranks *)
+(* Helper function to prepend ones to a shape array to match ranks *)
 let pad_shape_to arr_shape target_shape =
   let arr_ndim = Array.length arr_shape in
   let tgt_ndim = Array.length target_shape in
@@ -1067,13 +1017,9 @@ let reduce_sum_to_shape (arr: t) (target_shape: int array) : t =
   (* Perform the reductions *)
   List.fold_left (fun acc axis -> dsum acc axis) arr axes_to_reduce
 
-
-
 let relu arr =
   let data_relu = Array.map (fun x -> if x > 0.0 then x else 0.0) arr.data in
   { data = data_relu; shape = arr.shape }
-
-
 
 let to_string arr =
   let format_row row =
@@ -1139,10 +1085,6 @@ let transpose_last_two_dims t =
   { data = new_data; shape = new_shape }
 
 let conv2d input kernel ~stride ~padding =
-  (* Printf.printf "start nd con2v\n"; *)
-  (* print_shape input.shape; *)
-  (* print_shape kernel.shape; *)
-
   let batch_size, in_channels, in_height, in_width = input.shape.(0), input.shape.(1), input.shape.(2), input.shape.(3) in
   let out_channels, _, kernel_height, kernel_width = kernel.shape.(0), kernel.shape.(1), kernel.shape.(2), kernel.shape.(3) in
 
@@ -1175,8 +1117,6 @@ let conv2d input kernel ~stride ~padding =
       done
     done
   done;
-  (* Printf.printf "finish nd con2v\n"; *)
-  (* print_shape output.shape; *)
   output
 
     
@@ -1186,18 +1126,18 @@ let flip_and_swap_kernel kernel =
   let kernel_height = kernel.shape.(2) in
   let kernel_width = kernel.shape.(3) in
 
-  (* 创建一个新 ndarray，交换前两维度 *)
+  (* Create a new ndarray with the first two dimensions swapped *)
   let flipped_kernel = zeros [| in_channels; out_channels; kernel_height; kernel_width |] in
 
-  (* 填充新 ndarray，旋转最后两个维度 *)
+  (* Populate the new ndarray, rotating the last two dimensions *)
   for oc = 0 to out_channels - 1 do
     for ic = 0 to in_channels - 1 do
       for kh = 0 to kernel_height - 1 do
         for kw = 0 to kernel_width - 1 do
-          (* 旋转 180 度对应的索引 *)
+          (* Indices corresponding to a 180-degree rotation *)
           let flipped_kh = kernel_height - 1 - kh in
           let flipped_kw = kernel_width - 1 - kw in
-          (* 交换前两维度，并修复索引计算 *)
+          (* Swap the first two dimensions and adjust index calculations *)
           flipped_kernel.data.((ic * out_channels + oc) * kernel_height * kernel_width + flipped_kh * kernel_width + flipped_kw) <-
             kernel.data.((oc * in_channels + ic) * kernel_height * kernel_width + kh * kernel_width + kw)
         done
@@ -1206,56 +1146,6 @@ let flip_and_swap_kernel kernel =
   done;
   flipped_kernel
   
-let expand_doutput doutput input_channels =
-  let batch_size = doutput.shape.(0) in
-  let out_channels = doutput.shape.(1) in
-  let out_h = doutput.shape.(2) in
-  let out_w = doutput.shape.(3) in
-
-  (* 创建一个新 ndarray，形状为 (batch_size, out_channel, input_channel, out_h, out_w) *)
-  let expanded = zeros [| batch_size; out_channels; input_channels; out_h; out_w |] in
-
-  (* 遍历 doutput 并在新维度中复制 *)
-  for b = 0 to batch_size - 1 do
-    for oc = 0 to out_channels - 1 do
-      for ic = 0 to input_channels - 1 do
-        for h = 0 to out_h - 1 do
-          for w = 0 to out_w - 1 do
-            expanded.data.((((b * out_channels + oc) * input_channels + ic) * out_h + h) * out_w + w) <-
-              doutput.data.(((b * out_channels + oc) * out_h + h) * out_w + w)
-          done
-        done
-      done
-    done
-  done;
-  expanded
-
-let expand_input input out_channel =
-  let batch_size = input.shape.(0) in
-  let input_channels = input.shape.(1) in
-  let out_h = input.shape.(2) in
-  let out_w = input.shape.(3) in
-
-  (* 创建新的张量，形状为 (batch_size, out_channel, input_channel, outh, outw) *)
-  let expanded_input = zeros [|batch_size; out_channel; input_channels; out_h; out_w|] in
-
-  (* 对每个 batch 和每个 output_channel 进行复制 *)
-  for b = 0 to batch_size - 1 do
-    for oc = 0 to out_channel - 1 do
-      for ic = 0 to input_channels - 1 do
-        for h = 0 to out_h - 1 do
-          for w = 0 to out_w - 1 do
-            (* 将 input 的数据复制到 expanded_input 对应位置 *)
-            expanded_input.data.((((b * out_channel + oc) * input_channels + ic) * out_h + h) * out_w + w) <-
-              input.data.(((b * input_channels + ic) * out_h + h) * out_w + w)
-          done
-        done
-      done
-    done
-  done;
-
-  expanded_input
-
 let layerwise_convolution_with_doutput_as_kernel input doutput stride padding =
   let batch_size = input.shape.(0) in
   let out_channel = doutput.shape.(1) in
@@ -1266,38 +1156,38 @@ let layerwise_convolution_with_doutput_as_kernel input doutput stride padding =
   let output_h = doutput.shape.(2) in
   let output_w = doutput.shape.(3) in
 
-  (* 计算卷积核的高度和宽度 *)
-  let kernel_h = (input_h - output_h + 2 * padding) / stride +1 in
-  let kernel_w = (input_w - output_w + 2 * padding) / stride +1 in
+  (* Calculate the height and width of the kernel *)
+  let kernel_h = (input_h - output_h + 2 * padding) / stride + 1 in
+  let kernel_w = (input_w - output_w + 2 * padding) / stride + 1 in
 
-  (* 输出张量，形状为 (batch_size, out_channel, input_channel, kernel_h, kernel_w) *)
+  (* Output tensor with shape (batch_size, out_channel, input_channel, kernel_h, kernel_w) *)
   let output = zeros [| batch_size; out_channel; input_channel; kernel_h; kernel_w |] in
 
-  (* 执行卷积操作 *)
+  (* Perform the convolution operation *)
   for b = 0 to batch_size - 1 do
     for oc = 0 to out_channel - 1 do
       for ic = 0 to input_channel - 1 do
         for kh = 0 to kernel_h - 1 do
           for kw = 0 to kernel_w - 1 do
-            (* 计算卷积操作的开始位置 *)
+            (* Compute the starting position for the convolution operation *)
             let h_start = kh * stride - padding in
             let w_start = kw * stride - padding in
 
-            (* 计算每个位置的卷积结果 *)
+            (* Compute the convolution result at each position *)
             let sum = ref 0.0 in
             for dkh = 0 to output_h - 1 do
               for dkw = 0 to output_w - 1 do
-                (* 检查是否超出输入范围 *)
+                (* Check if the position is within the input range *)
                 let h_pos = h_start + dkh in
                 let w_pos = w_start + dkw in
                 if h_pos >= 0 && h_pos < input_h && w_pos >= 0 && w_pos < input_w then
-                  (* 进行卷积操作 *)
+                  (* Perform the convolution operation *)
                   sum := !sum +. input.data.((((b) * input_channel + ic) * input_h + h_pos) * input_w + w_pos) *. 
-                            doutput.data.((((b * out_channel + oc))* output_h + dkh) * output_w + dkw)
+                            doutput.data.((((b * out_channel + oc)) * output_h + dkh) * output_w + dkw)
               done
             done;
 
-            (* 将卷积结果放到输出张量中 *)
+            (* Store the convolution result in the output tensor *)
             output.data.((((b * out_channel + oc) * input_channel + ic) * kernel_h + kh) * kernel_w + kw) <- !sum
           done
         done
@@ -1316,11 +1206,9 @@ let image_scale t =
 
   {data = normalized_data; shape = t.shape}
 
-(* 计算 ndarray 的 L2 范数 *)
 let l2_norm (nd: t) : float =
   Array.fold_left (fun acc x -> acc +. x *. x) 0.0 nd.data |> Stdlib.sqrt
 
-(* 原地裁剪 ndarray 数据到指定范数范围内 *)
 let clip_by_norm (nd: t) (clip_value: float) : unit =
   let norm = l2_norm nd in
   if norm > clip_value then

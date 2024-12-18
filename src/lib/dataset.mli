@@ -6,10 +6,6 @@ type t = {
   label : ndarray; (* The labels for the dataset. *)
 }
 
-val get_item : t -> int -> ndarray * ndarray
-(** [get_item dataset idx] retrieves the sample at the specified index [idx] from the dataset [dataset].
-    It returns a tuple containing the data tensor and the label tensor for the sample. *)
-
 val shuffle : t -> t
 (** [shuffle dataset] shuffles the samples in the dataset [dataset] and returns a new dataset with the samples randomly shuffled. *)
 

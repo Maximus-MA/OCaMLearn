@@ -6,8 +6,6 @@ let label_string_to_int label_string =
   | _ -> failwith "Unknown label"
 let example_iris () =
   let dataset = Dataset.load_csv "dataset/iris.csv" 4 label_string_to_int 3 in
-  (* print_data dataset.data.data; *)
-  (* print_shape dataset.data.shape; *)
   let dataset = Dataset.shuffle dataset in
   let train_dataset, test_dataset = Dataset.split dataset 0.8 in
 
@@ -29,7 +27,6 @@ let example_iris () =
     for batch_idx = 0 to Dataloader.get_total_batches test_loader - 1 do
       let batch = Dataloader.get_batch test_loader batch_idx in
       let output = Model.forward model [batch.data] in
-      (* Printf.printf "Output: %s\n" (Tensor.to_string output); *)
   
       let output_labels = Ndarray.dargmax output.data 1 in
       let target_labels = Ndarray.dargmax batch.label.data 1 in
@@ -40,12 +37,6 @@ let example_iris () =
           incr correct;
         incr total;
       done;
-  
-      (* let loss = Model.forward loss_func [output; batch.label] in *)
-      (* Printf.printf "Target: %s\n" (Tensor.to_string batch.label); *)
-      (* Printf.printf "Output label: %s\n" (Ndarray.to_string output_labels); *)
-      (* Printf.printf "Target label: %s\n" (Ndarray.to_string target_labels); *)
-      (* Printf.printf "Test Loss: %s\n" (Tensor.to_string loss); *)
     done;
     let accuracy = (float_of_int !correct) /. (float_of_int !total) *. 100.0 in
     accuracy
@@ -57,13 +48,8 @@ let example_iris () =
       let total_batches = Dataloader.get_total_batches train_loader in
       for batch_idx = 0 to total_batches - 1 do
         let batch = Dataloader.get_batch train_loader batch_idx in
-        (* Printf.printf "Input: %s\n" (Tensor.to_string batch.data); *)
-        (* Printf.printf "Target: %s\n" (Tensor.to_string batch.label); *)
-        
         let output = Model.forward model [batch.data] in
-        (* Printf.printf "Output: %s\n" (Tensor.to_string output); *)
         let loss = Model.forward loss_func [output; batch.label] in
-        (* Printf.printf "Loss: %s\n"  (Tensor.to_string loss); *)
         total_loss := !total_loss +. loss.data.data.(0);
         optimizer.zero_grad ();
         Utils.backprop loss;
@@ -135,7 +121,6 @@ let example_mnist_mlp () =
       for batch_idx = 0 to total_batches - 1 do
         let correct = ref 0 in
         let total = ref 0 in
-        (* Printf.printf "Batch %d/%d\n" batch_idx total_batches; *)
         flush stdout;
         let batch = Dataloader.get_batch train_loader batch_idx in
         let output = Model.forward model [batch.data] in
@@ -143,7 +128,6 @@ let example_mnist_mlp () =
         total_loss := !total_loss +. loss.data.data.(0);
         optimizer.zero_grad ();
         Utils.backprop loss;
-        (* Printf.printf "loss: %s\n" (Tensor.to_string loss); *)
         optimizer.step ();
 
         (* Calculate accuracy for the current batch *)
@@ -226,7 +210,6 @@ let example_mnist_cnn () =
       for batch_idx = 0 to total_batches - 1 do
         let correct = ref 0 in
         let total = ref 0 in
-        (* Printf.printf "Batch %d/%d\n" batch_idx total_batches; *)
         flush stdout;
         let batch = Dataloader.get_batch train_loader batch_idx in
         let output = Model.forward model [batch.data] in
@@ -234,7 +217,6 @@ let example_mnist_cnn () =
         total_loss := !total_loss +. loss.data.data.(0);
         optimizer.zero_grad ();
         Utils.backprop loss;
-        (* Printf.printf "loss: %s\n" (Tensor.to_string loss); *)
         optimizer.step ();
 
         (* Calculate accuracy for the current batch *)
@@ -262,9 +244,6 @@ let example_mnist_cnn () =
   train ()
 
 let () =
-  (* example1 (); *)
-  (* example2 (); *)
-  (* example3 (); *)
   example_iris ();
   example_mnist_mlp ();
   example_mnist_cnn ()

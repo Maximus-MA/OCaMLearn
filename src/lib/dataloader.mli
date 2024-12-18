@@ -18,8 +18,7 @@ type t = {
 val create : ?transforms:transform list -> dataset -> batch_size:int -> shuffle:bool -> t
 (** [create ?transforms dataset batch_size shuffle] creates a new data loader
     from the specified dataset. Optionally applies a list of transformations to
-    the dataset. If [shuffle] is true, the dataset is shuffled before batching.
-*)
+    the dataset. If [shuffle] is true, the dataset is shuffled before batching.*)
 
 val get_batch : t -> int -> tensor_dataset
 (** [get_batch dataloader idx] retrieves the batch at the specified index [idx]

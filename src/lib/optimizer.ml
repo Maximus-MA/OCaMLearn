@@ -14,19 +14,10 @@ let not_implemented feature_name =
   failwith (feature_name ^ " is not yet implemented")
 
 let create_SGD ~params ~lr =
-  let step = fun () -> List.iter params ~f:(fun param->
-                        (* Tensor.(Ndarray.clip_by_norm param.grad 5.0); *)
-                        (* Tensor.(Ndarray.clip_by_range param.grad 0.00001 3.0); *)
-                        (* Tensor.(Printf.printf "param.grad: %s\n" (Ndarray.to_string param.grad)); *)
-                        Tensor.(param.data <- Ndarray.sub param.data (Ndarray.mul param.grad (Ndarray.scaler lr)))) in
+  let step = fun () -> List.iter params ~f:(fun param -> Tensor.(param.data <- 
+    Ndarray.sub param.data (Ndarray.mul param.grad (Ndarray.scaler lr)))) in
   let zero_grad = fun () -> List.iter params ~f:(fun param -> Tensor.zero_grad param) in
-  { parameters = params; step = step; zero_grad = zero_grad }
+    { parameters = params; step = step; zero_grad = zero_grad }
 
 let create_Adam ~params ~lr ~beta1 ~beta2 ~eps =
   not_implemented "create_Adam"
-
-let step optimizer =
-  not_implemented "step"
-
-let zero_grad optimizer =
-  not_implemented "zero_grad"
