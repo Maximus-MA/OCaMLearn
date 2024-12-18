@@ -589,13 +589,18 @@ let conv2d t kernel ~stride ~padding =
   res.backward_fn <- Some (fun () ->
     let grad_output = res.grad in
     if t.requires_grad then
-      let grad_t = Ndarray.conv2d grad_output (Ndarray.rotate180 kernel.data) ~stride ~padding in
+      let full_padding =
+        let kernel_shape = Ndarray.shape kernel.data in
+        kernel_shape.(3) - 1
+      in
+      let grad_t = Ndarray.conv2d grad_output (Ndarray.rotate180 kernel.data) ~stride:1 ~padding:full_padding in
       accumulate_grad t grad_t;
     if kernel.requires_grad then
-      let grad_kernel = Ndarray.conv2d (Ndarray.rotate180 t.data) grad_output ~stride ~padding in
+      let grad_kernel = Ndarray.conv2d t.data grad_output ~stride:1 ~padding:0 in
       accumulate_grad kernel grad_kernel
   );
   res
+
 
   let meanpool2d t ~kernel_size ~stride =
     let input_shape = t.data.shape in
