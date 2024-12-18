@@ -11,10 +11,7 @@ let not_implemented feature_name =
   failwith (feature_name ^ " is not yet implemented")
 
 let normalize x =
-  if Ndarray.max x > 1.0 then 
-    let tt = Ndarray.div x (Ndarray.scaler 255.0) in 
-    Ndarray.normalize tt
-  else Ndarray.normalize x
+  Ndarray.normalize x
 
 let resize width height =
   not_implemented "resize"
