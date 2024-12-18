@@ -118,8 +118,4 @@ let create_CrossEntropy () =
     loss
   in
   create ~parameters:[] ~forward_fn
-<<<<<<< HEAD
  
-=======
- 
->>>>>>> 88958409a2c2f9772ffbe4acaf9f42e7c34309ef
