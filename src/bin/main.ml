@@ -82,7 +82,7 @@ let example_mnist_mlp () =
 
   let batch_size = 256 in 
   let learning_rate = 0.1 in 
-  let epochs = 20 in 
+  let epochs = 10 in 
 
   (* Create datasets *)
   let train_dataset, test_dataset = Dataset.load_mnist false in
@@ -94,9 +94,9 @@ let example_mnist_mlp () =
   (* Define the model *)
   Printf.printf "Create Model\n";
   let model = Model.create_Sequential [
-    Model.create_Linear ~in_features:(28 * 28) ~out_features:32 ~bias:true;
-    Model.create_ReLU ();
-    Model.create_Linear ~in_features:32 ~out_features:10 ~bias:true;
+    Model.create_Linear ~in_features:(28 * 28) ~out_features:10 ~bias:true;
+    (* Model.create_ReLU (); *)
+    (* Model.create_Linear ~in_features:32 ~out_features:10 ~bias:true; *)
   ] in 
   
   (* Define the loss function and optimizer *)

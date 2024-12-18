@@ -380,8 +380,10 @@ let mean ?dim t =
     );
   t_new
   
+let dsum t dim =
+  sum ~dim:dim t
 
-let variance t =
+(* let variance t =
   not_implemented "variance"
 
 let std t =
@@ -416,7 +418,7 @@ let dstd t dim =
   not_implemented "dstd"
 
 let dnormalize t dim =
-  not_implemented "dnormalize"
+  not_implemented "dnormalize" *)
 
 let dmax t dim =
   let data = Ndarray.dmax t.data dim in

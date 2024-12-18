@@ -111,7 +111,7 @@ val sum : ?dim:int -> t -> t
 val mean : ?dim:int -> t -> t
 (** [mean t] calculates the mean of all elements in tensor [t]. *)
 
-val variance : t -> t
+(* val variance : t -> t
 (** [variance t] calculates the variance of all elements in tensor [t]. *)
 
 val std : t -> t
@@ -132,9 +132,6 @@ val argmax : t -> t
 val argmin : t -> t
 (** [argmin t] returns the indices of minimum values in tensor [t]. *)
 
-val dsum : t -> int -> t
-(** [dsum t dim] calculates the sum of elements along the specified dimension [dim] in tensor [t]. *)
-
 val dmean : t -> int -> t
 (** [dmean t dim] calculates the mean of elements along the specified dimension [dim] in tensor [t]. *)
 
@@ -145,7 +142,10 @@ val dstd : t -> int -> t
 (** [dstd t dim] calculates the standard deviation of elements along the specified dimension [dim] in tensor [t]. *)
 
 val dnormalize : t -> int -> t
-(** [dnormalize t dim] normalizes tensor [t] along dimension [dim] to have mean 0 and std 1. *)
+* [dnormalize t dim] normalizes tensor [t] along dimension [dim] to have mean 0 and std 1. *)
+
+val dsum : t -> int -> t
+(** [dsum t dim] calculates the sum of elements along the specified dimension [dim] in tensor [t]. *)
 
 val dmax : t -> int -> t
 (** [dmax t dim] finds the maximum values along the specified dimension [dim] in tensor [t]. *)

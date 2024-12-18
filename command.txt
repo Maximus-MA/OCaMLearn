@@ -1,0 +1,3 @@
+dune clean
+dune test --instrument-with bisect_ppx
+
