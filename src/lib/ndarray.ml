@@ -1071,7 +1071,7 @@ let to_string arr =
 let normalize t =
   let mean_vals = dmean t 0 in
   let std_vals = dstd t 0 in
-  div (sub t mean_vals)  std_vals
+  div (sub t mean_vals)  (add std_vals (scaler 0.0000001))
 
 let transpose_last_two_dims t =
   let ndim = Array.length t.shape in

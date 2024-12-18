@@ -562,7 +562,108 @@ let conv2d t kernel ~stride ~padding =
   );
   res
 
-
+  let meanpool2d t ~kernel_size ~stride =
+    let input_shape = t.data.shape in
+    let batch_size = input_shape.(0) in
+    let channels = input_shape.(1) in
+    let input_height = input_shape.(2) in
+    let input_width = input_shape.(3) in
+  
+    (* 计算输出的高度和宽度 *)
+    let output_height = (input_height - kernel_size) / stride + 1 in
+    let output_width = (input_width - kernel_size) / stride + 1 in
+  
+    (* 创建输出数据 *)
+    let output_data = Ndarray.zeros [| batch_size; channels; output_height; output_width |] in
+  
+    (* 前向计算：遍历池化窗口，计算平均值 *)
+    for b = 0 to batch_size - 1 do
+      for c = 0 to channels - 1 do
+        for h = 0 to output_height - 1 do
+          for w = 0 to output_width - 1 do
+            (* 当前池化窗口的起始索引 *)
+            let h_start = h * stride in
+            let w_start = w * stride in
+            let h_end = Core.min (h_start + kernel_size) input_height in
+            let w_end = Core.min (w_start + kernel_size) input_width in
+  
+            (* 提取窗口并计算平均值 *)
+            let sum = ref 0.0 in
+            for i = h_start to h_end - 1 do
+              for j = w_start to w_end - 1 do
+                let idx = (b * channels * input_height * input_width) +
+                          (c * input_height * input_width) +
+                          (i * input_width) + j in
+                sum := !sum +. t.data.data.(idx);
+              done
+            done;
+  
+            let num_elements = float_of_int ((h_end - h_start) * (w_end - w_start)) in
+            let mean_value = !sum /. num_elements in
+  
+            (* 保存平均值到输出张量 *)
+            let output_idx = (b * channels * output_height * output_width) +
+                             (c * output_height * output_width) +
+                             (h * output_width) + w in
+            output_data.data.(output_idx) <- mean_value;
+          done
+        done
+      done
+    done;
+  
+    (* 创建输出 Tensor *)
+    let res = {
+      data = { data = output_data.data; shape = [| batch_size; channels; output_height; output_width |] };
+      requires_grad = t.requires_grad;
+      grad = Ndarray.zeros [| batch_size; channels; output_height; output_width |];
+      backward_fn = None;
+      prev = [t];
+    } in
+  
+    (* 如果需要反向传播，定义梯度计算逻辑 *)
+    if t.requires_grad then
+      res.backward_fn <- Some (fun () ->
+        let grad_output = res.grad in
+        let grad_input = Ndarray.zeros t.data.shape in
+  
+        (* 反向传播：均匀分配梯度到窗口中的每个元素 *)
+        for b = 0 to batch_size - 1 do
+          for c = 0 to channels - 1 do
+            for h = 0 to output_height - 1 do
+              for w = 0 to output_width - 1 do
+                (* 当前窗口的起始索引 *)
+                let h_start = h * stride in
+                let w_start = w * stride in
+                let h_end = Core.min (h_start + kernel_size) input_height in
+                let w_end = Core.min (w_start + kernel_size) input_width in
+  
+                let grad_value = grad_output.data.((b * channels * output_height * output_width) +
+                                                    (c * output_height * output_width) +
+                                                    (h * output_width) + w) in
+                let num_elements = float_of_int ((h_end - h_start) * (w_end - w_start)) in
+                let distributed_grad = grad_value /. num_elements in
+  
+                (* 将梯度分配回输入张量 *)
+                for i = h_start to h_end - 1 do
+                  for j = w_start to w_end - 1 do
+                    let idx = (b * channels * input_height * input_width) +
+                              (c * input_height * input_width) +
+                              (i * input_width) + j in
+                    grad_input.data.(idx) <- grad_input.data.(idx) +. distributed_grad;
+                  done
+                done;
+              done
+            done
+          done
+        done;
+  
+        (* 累积梯度 *)
+        accumulate_grad t grad_input
+      );
+  
+    res
+  
+  
 (* 
   type t = {
   mutable data: ndarray;                    (* The tensor's data as an ndarray *)

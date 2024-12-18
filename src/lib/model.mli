@@ -29,6 +29,14 @@ val create_Conv2d :
 (** [create_Conv2d in_channels out_channels kernel_size stride padding] creates a new 2D convolutional layer with the specified number of input channels [in_channels],
     output channels [out_channels], kernel size [kernel_size], stride [stride], and padding [padding]. *)
 
+val create_MeanPool2d : 
+kernel_size:int -> 
+stride:int -> 
+t
+(** [create_MeanPool2d kernel_size stride] creates a 2D mean pooling layer with the specified pooling window size [kernel_size]
+    and stride [stride]. The layer performs average pooling over the input tensor to reduce its spatial dimensions. *)
+
+      
 val create_Flatten : unit -> t
 (** [create_Flatten ()] creates a layer that flattens the input tensor into a 1D vector. *)
 

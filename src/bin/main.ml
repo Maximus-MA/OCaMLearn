@@ -197,14 +197,39 @@ let example_mnist () =
   let test_loader = Dataloader.create test_dataset ~batch_size:1000 ~shuffle:false ~transforms:[Transform.normalize] in
 
   (* Define the model *)
-  let model = Model.create_Sequential [
+  (* let model = Model.create_Sequential [
     Model.create_Linear ~in_features:(28 * 28) ~out_features:32 ~bias:true;
     Model.create_ReLU ();
     (* Model.create_Linear ~in_features:128 ~out_features:64 ~bias:true;
     Model.create_ReLU (); *)
     Model.create_Linear ~in_features:32 ~out_features:10 ~bias:true;
-  ] in 
-
+  ] in  *)
+  let model = Model.create_Sequential [
+    (* 第1层：卷积层 + ReLU 激活 *)
+    Model.create_Conv2d ~in_channels:1 ~out_channels:32 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:true;
+    Model.create_ReLU ();
+  
+    (* 第2层：池化层 *)
+    Model.create_MeanPool2d ~kernel_size:2 ~stride:2;
+  
+    (* 第3层：卷积层 + ReLU 激活 *)
+    Model.create_Conv2d ~in_channels:32 ~out_channels:64 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:true;
+    Model.create_ReLU ();
+  
+    (* 第4层：池化层 *)
+    Model.create_MeanPool2d ~kernel_size:2 ~stride:2;
+  
+    (* 第5层：Flatten 展平层 *)
+    Model.create_Flatten ();
+  
+    (* 第6层：全连接层1 + ReLU *)
+    Model.create_Linear ~in_features:(7 * 7 * 64) ~out_features:128 ~bias:true;
+    Model.create_ReLU ();
+  
+    (* 第7层：全连接层2（输出层） *)
+    Model.create_Linear ~in_features:128 ~out_features:10 ~bias:true;
+  ] in
+  
   (* Define the loss function and optimizer *)
   let loss_func = Model.create_CrossEntropy () in
   let optimizer = Optimizer.create_SGD ~params:Model.(model.parameters) ~lr:0.01 in
@@ -232,7 +257,7 @@ let example_mnist () =
 
   (* Define the train function *)
   let train () =
-    for epoch = 1 to 2 do
+    for epoch = 1 to 20 do
       Printf.printf "Epoch %d/%d\n" epoch 20;
       flush stdout;
       let total_loss = ref 0.0 in

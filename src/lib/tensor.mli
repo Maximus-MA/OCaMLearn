@@ -206,3 +206,10 @@ val neg : t -> t
 val conv2d : t -> t -> stride: int -> padding: int -> t
 (** [conv2d input kernel stride padding] performs a 2D convolution operation on the input tensor [input] using the given [kernel].
     The [stride] and [padding] arguments control the sliding stride and padding of the convolution operation. *)
+
+val meanpool2d :t -> kernel_size:int -> stride:int -> t
+(** [meanpool2d t ~kernel_size ~stride] performs mean pooling on the input [tensor].
+    - [t]: The input tensor of shape [batch_size; channels; height; width].
+    - [kernel_size]: The size of the pooling window (e.g., 2 for a 2x2 window).
+    - [stride]: The step size for moving the pooling window.
+    - Returns a new tensor after mean pooling. *)
