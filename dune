@@ -19,7 +19,6 @@
     src/lib/ndarray.mli
     src/lib/ndarray.ml
     src/test/dune
-    src/test/tests.ml
     src/bin/dune
     src/bin/main.ml
   )

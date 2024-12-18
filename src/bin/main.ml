@@ -5,7 +5,7 @@ let label_string_to_int label_string =
   | "Iris-virginica" -> 2
   | _ -> failwith "Unknown label"
 let example_iris () =
-  let dataset = Dataset.load_csv "dataset/iris.csv" 4 label_string_to_int 3 in
+  let dataset = Dataset.load_csv "dataset/iris/iris.csv" 4 label_string_to_int 3 in
   let dataset = Dataset.shuffle dataset in
   let train_dataset, test_dataset = Dataset.split dataset 0.8 in
 
