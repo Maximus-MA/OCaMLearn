@@ -580,6 +580,8 @@ let slice t ranges  =
   res
 
 let conv2d t kernel ~stride ~padding =
+  
+  Printf.printf "Shape of kernel in the tensor conv2d %d\n" (Array.length kernel.data.shape);
   let data = Ndarray.conv2d t.data kernel.data ~stride ~padding in
   let requires_grad = t.requires_grad || kernel.requires_grad in
   let prev = [t; kernel] in

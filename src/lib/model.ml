@@ -39,13 +39,15 @@ let create_Linear ~in_features ~out_features ~bias =
     create ~parameters ~forward_fn
 
 let create_Conv2d ~in_channels ~out_channels ~kernel_size ~stride ~padding ~bias =
+  Printf.printf "create conv2d\n";
   let w = Tensor.rand [|out_channels; in_channels; kernel_size; kernel_size|] in
+  Printf.printf "Kernel shape %d\n" (Array.length w.data.shape);
   if bias then
     let b = Tensor.rand [|1; out_channels|] in
     let parameters = [w; b] in
     let forward_fn inputs =
       let x = List.hd_exn inputs in
-      Tensor.(add (conv2d x w ~stride ~padding) b) in
+      Tensor.(add (Tensor.conv2d x w ~stride ~padding) b) in
     create ~parameters ~forward_fn
   else
     let parameters = [w] in
@@ -118,8 +120,4 @@ let create_CrossEntropy () =
     loss
   in
   create ~parameters:[] ~forward_fn
-<<<<<<< HEAD
  
-=======
- 
->>>>>>> 88958409a2c2f9772ffbe4acaf9f42e7c34309ef

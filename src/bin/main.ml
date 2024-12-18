@@ -190,7 +190,7 @@ let example_iris () =
 let example_mnist () =
 
   (* Create datasets *)
-  let train_dataset, test_dataset = Dataset.load_mnist () in
+  let train_dataset, test_dataset = Dataset.load_cnn_mnist () in
 
   (* Create data loaders *)
   let train_loader = Dataloader.create train_dataset ~batch_size:256 ~shuffle:true ~transforms:[Transform.normalize] in
@@ -204,6 +204,7 @@ let example_mnist () =
     Model.create_ReLU (); *)
     Model.create_Linear ~in_features:32 ~out_features:10 ~bias:true;
   ] in  *)
+  Printf.printf "Create Model\n";
   let model = Model.create_Sequential [
     (* 第1层：卷积层 + ReLU 激活 *)
     Model.create_Conv2d ~in_channels:1 ~out_channels:32 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:true;

@@ -27,3 +27,6 @@ val load_csv : string -> int -> (string -> int) -> int -> t
 
 val load_mnist : unit -> t*t
 (** [load_mnist ()] loads the MNIST dataset and returns a tuple containing the training and test datasets. *)
+
+val load_cnn_mnist : unit -> t*t
+(** [load_cnn_mnist ()] loads the MNIST dataset for cnn and returns a tuple containing the training and test datasets. *)
