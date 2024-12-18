@@ -43,7 +43,7 @@ let create_Conv2d ~in_channels ~out_channels ~kernel_size ~stride ~padding ~bias
   let w = Tensor.rand [|out_channels; in_channels; kernel_size; kernel_size|] in
   Printf.printf "Kernel shape %d\n" (Array.length w.data.shape);
   if bias then
-    let b = Tensor.rand [|1; out_channels|] in
+    let b = Tensor.rand [|out_channels; 1; 1|] in
     let parameters = [w; b] in
     let forward_fn inputs =
       let x = List.hd_exn inputs in
