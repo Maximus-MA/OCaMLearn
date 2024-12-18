@@ -143,6 +143,7 @@ let read_labels filename =
 let convert_labels_to_one_hot labels num_classes =
   Array.map (fun label -> one_hot_encode num_classes (int_of_float label)) labels
 
+<<<<<<< HEAD
   let load_cnn_mnist () =
     (* Load the MNIST dataset *)
     let train_images = read_images "dataset/mnist/train-images-idx3-ubyte" in
@@ -263,3 +264,125 @@ let convert_labels_to_one_hot labels num_classes =
     let load_mnist full_size = 
       if full_size then load_mnist_full ()
       else load_mnist_small()
+=======
+let load_cnn_mnist () =
+  (* Load the MNIST dataset *)
+  let train_images = read_images "dataset/mnist/train-images-idx3-ubyte" in
+  let train_labels = read_labels "dataset/mnist/train-labels-idx1-ubyte" in
+  let test_images = read_images "dataset/mnist/t10k-images-idx3-ubyte" in
+  let test_labels = read_labels "dataset/mnist/t10k-labels-idx1-ubyte" in
+
+  (* Convert the labels to one-hot encoding *)
+  let train_labels = convert_labels_to_one_hot train_labels 10 in
+  let test_labels = convert_labels_to_one_hot test_labels 10 in
+
+  (* Calculate reduced size: 10% of the original training set *)
+  let original_size = Array.length train_images in
+  let target_size = max 1 (original_size) in  (* Ensure at least 1 sample *)
+
+  (* Slice the first 10% of train_images and train_labels *)
+  let reduced_train_images = Array.sub train_images 0 target_size in
+  let reduced_train_labels = Array.sub train_labels 0 target_size in
+
+  (* Reshape the training images for CNN input: [batch_size, 1, 28, 28] *)
+  let reshape_images images =
+    Array.map (fun image ->
+      Array.init 1 (fun _ -> image)  (* Add a channel dimension *)
+    ) images
+  in
+  let cnn_train_images = reshape_images reduced_train_images in
+  let cnn_test_images = reshape_images test_images in
+
+  (* Convert the reshaped data to ndarrays *)
+  let train_data = Ndarray.create 
+      (Array.concat (Array.to_list (Array.concat (Array.to_list cnn_train_images))))
+      [| target_size; 1; 28; 28 |] in
+
+  let train_labels = Ndarray.create 
+      (Array.concat (Array.to_list reduced_train_labels)) 
+      [| target_size; 10 |] in
+
+  let test_data = Ndarray.create 
+      (Array.concat (Array.to_list (Array.concat (Array.to_list cnn_test_images))))
+      [| Array.length test_images; 1; 28; 28 |] in
+
+  let test_labels = Ndarray.create 
+      (Array.concat (Array.to_list test_labels)) 
+      [| Array.length test_labels; 10 |] in
+
+  (* Create datasets *)
+  let train_dataset = { data = train_data; label = train_labels } in
+  let test_dataset = { data = test_data; label = test_labels } in
+  (train_dataset, test_dataset)
+
+
+let load_mnist_full () =
+  (* Load the MNIST dataset *)
+  let train_images = read_images "dataset/mnist/train-images-idx3-ubyte" in
+  let train_labels = read_labels "dataset/mnist/train-labels-idx1-ubyte" in
+  let test_images = read_images "dataset/mnist/t10k-images-idx3-ubyte" in
+  let test_labels = read_labels "dataset/mnist/t10k-labels-idx1-ubyte" in
+
+  (* Convert the labels to one-hot encoding *)
+  let train_labels = convert_labels_to_one_hot train_labels 10 in
+  let test_labels = convert_labels_to_one_hot test_labels 10 in
+
+  (* Convert the data to ndarrays *)
+  let train_data = Ndarray.create (Array.concat (Array.to_list train_images)) [| Array.length train_images; 28 * 28 |] in
+  let train_labels = Ndarray.create (Array.concat (Array.to_list train_labels)) [| Array.length train_labels; 10 |] in
+  let test_data = Ndarray.create (Array.concat (Array.to_list test_images)) [| Array.length test_images; 28 * 28 |] in
+  let test_labels = Ndarray.create (Array.concat (Array.to_list test_labels)) [| Array.length test_labels; 10 |] in
+
+  (* Create datasets *)
+  let train_dataset = { data = train_data; label = train_labels } in
+  let test_dataset = { data = test_data; label = test_labels } in
+  (* let train_dataset = test_dataset in *)
+  (train_dataset, test_dataset)
+  
+
+let load_mnist_small () =
+  (* Load the MNIST dataset *)
+  let train_images = read_images "dataset/mnist/train-images-idx3-ubyte" in
+  let train_labels = read_labels "dataset/mnist/train-labels-idx1-ubyte" in
+  let test_images = read_images "dataset/mnist/t10k-images-idx3-ubyte" in
+  let test_labels = read_labels "dataset/mnist/t10k-labels-idx1-ubyte" in
+
+  (* Convert the labels to one-hot encoding *)
+  let train_labels = convert_labels_to_one_hot train_labels 10 in
+  let test_labels = convert_labels_to_one_hot test_labels 10 in
+
+  (* Calculate reduced size: 10% of the original training set *)
+  let original_size = Array.length train_images in
+  let target_size = max 1 (original_size / 10) in  (* Ensure at least 1 sample *)
+
+  (* Slice the first 10% of train_images and train_labels *)
+  let reduced_train_images = Array.sub train_images 0 target_size in
+  let reduced_train_labels = Array.sub train_labels 0 target_size in
+
+  (* Convert the reduced data to ndarrays *)
+  let train_data = Ndarray.create 
+      (Array.concat (Array.to_list reduced_train_images)) 
+      [| target_size; 28 * 28 |] in
+
+  let train_labels = Ndarray.create 
+      (Array.concat (Array.to_list reduced_train_labels)) 
+      [| target_size; 10 |] in
+
+  (* Convert the test data to ndarrays (unchanged) *)
+  let test_data = Ndarray.create 
+      (Array.concat (Array.to_list test_images)) 
+      [| Array.length test_images; 28 * 28 |] in
+
+  let test_labels = Ndarray.create 
+      (Array.concat (Array.to_list test_labels)) 
+      [| Array.length test_labels; 10 |] in
+
+  (* Create datasets *)
+  let train_dataset = { data = train_data; label = train_labels } in
+  let test_dataset = { data = test_data; label = test_labels } in
+  (train_dataset, test_dataset)
+
+let load_mnist full_size = 
+  if full_size then load_mnist_full ()
+  else load_mnist_small()
+>>>>>>> f74f0ca711f6a45f6f3e729eb6c1581d81db91d0

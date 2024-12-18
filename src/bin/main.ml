@@ -78,7 +78,7 @@ let example_iris () =
   train ()
 
 
-let example_mnist () =
+let example_mnist_mlp () =
 
   let batch_size = 256 in 
   let learning_rate = 0.05 in 
@@ -157,7 +157,7 @@ let example_mnist () =
           incr total;
         done;
         let accuracy = (float_of_int !correct) /. (float_of_int !total) *. 100.0 in
-        Printf.printf "Batch: %d/%d\n, Loss: %s, Train Accuracy: %.2f%%\n" batch_idx total_batches (Tensor.to_string loss) accuracy;
+        Printf.printf "Batch: %d/%d, Loss: %s, Train Accuracy: %.2f%%\n" batch_idx total_batches (Tensor.to_string loss) accuracy;
         flush stdout;
       done;
       let avg_loss = !total_loss /. float_of_int total_batches in
@@ -173,7 +173,7 @@ let example_mnist () =
 let example_mnist_cnn () =
 
   let batch_size = 256 in 
-  let learning_rate = 0.005 in 
+  let learning_rate = 0.01 in 
   let epochs = 20 in 
 
   (* Create datasets *)
@@ -248,7 +248,7 @@ let example_mnist_cnn () =
           incr total;
         done;
         let accuracy = (float_of_int !correct) /. (float_of_int !total) *. 100.0 in
-        Printf.printf "Batch: %d/%d\n, Loss: %s, Train Accuracy: %.2f%%\n" batch_idx total_batches (Tensor.to_string loss) accuracy;
+        Printf.printf "Batch: %d/%d, Loss: %s, Train Accuracy: %.2f%%\n" batch_idx total_batches (Tensor.to_string loss) accuracy;
         flush stdout;
       done;
       let avg_loss = !total_loss /. float_of_int total_batches in
@@ -266,6 +266,6 @@ let () =
   (* example2 (); *)
   (* example3 (); *)
   example_iris ();
-  example_mnist ();
+  example_mnist_mlp ();
   example_mnist_cnn ()
   

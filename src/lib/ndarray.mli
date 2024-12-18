@@ -47,6 +47,9 @@ val arange : float -> t
 val rand : int array -> t
 (** [rand shape] creates an ndarray of the given [shape] filled with random values between 0 and 1. *)
 
+val randn : int array -> t
+(** [randn shape] creates an ndarray of the given [shape] filled with random values drawn from a standard normal distribution. *)
+
 val xavier_init : int array -> t
 (** [xavier_init shape] creates an ndarray with the given [shape] initialized using Xavier initialization. *)
 
@@ -217,3 +220,12 @@ val layerwise_convolution_with_doutput_as_kernel : t -> t -> int -> int -> t
 
 val image_scale : t -> t
 (** [image_scale t] scales the image to [-1,1] *)
+
+val l2_norm : t -> float
+(** [l2_norm t] returns the L2 norm of the input tensor [t]. *)
+
+val clip_by_norm : t -> float -> unit
+(** [clip_by_norm t value] clips the values of the input ndarray [t] to be within the range [-value, value]. *)
+
+val clip_by_range : t -> float -> float -> unit
+(** [clip_by_range t min max] clips the values of the input ndarray [t] to be within the range [min, max]. *)
