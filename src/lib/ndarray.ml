@@ -404,10 +404,31 @@ let arange stop : t =
   let data = Array.init n (fun i -> float_of_int i) in
   { data; shape = [|n|] }
 
+let box_muller () =
+  let u1 = Random.float 1.0 in
+  let u2 = Random.float 1.0 in
+  let r = sqrt (-2.0 *. log u1) in
+  let theta = 2.0 *. Float.pi *. u2 in
+  let z1 = r *. cos theta in
+  (* 返回标准正态分布样本 *)
+  z1
+
+(* 生成范围在 [-1, 1] 的正态分布样本 *)
+(* let rec generate_normal () =
+  let sample = box_muller () in
+  if sample >= -1.0 && sample <= 1.0 then
+    sample
+  else
+    generate_normal () *)
 (* Generate a random value ndarray *)
 let rand (shape: int array) : t =
   let size = Array.fold_left ( * ) 1 shape in
   let data = Array.init size (fun _ -> (Random.float 2.0) -. 1.0) in
+  { data; shape }
+
+let randn (shape: int array) : t =
+  let size = Array.fold_left ( * ) 1 shape in
+  let data = Array.init size (fun _ -> box_muller ()) in
   { data; shape }
 
 (* Xavier initialization *)
@@ -1248,13 +1269,13 @@ let expand_input input out_channel =
 
 let layerwise_convolution_with_doutput_as_kernel input doutput stride padding =
   let batch_size = input.shape.(0) in
-  let out_channel = input.shape.(1) in
-  let input_channel = input.shape.(2) in
-  let input_h = input.shape.(3) in
-  let input_w = input.shape.(4) in
+  let out_channel = doutput.shape.(1) in
+  let input_channel = input.shape.(1) in
+  let input_h = input.shape.(2) in
+  let input_w = input.shape.(3) in
 
-  let output_h = doutput.shape.(3) in
-  let output_w = doutput.shape.(4) in
+  let output_h = doutput.shape.(2) in
+  let output_w = doutput.shape.(3) in
 
   (* 计算卷积核的高度和宽度 *)
   let kernel_h = (input_h - output_h + 2 * padding) / stride +1 in
@@ -1282,8 +1303,8 @@ let layerwise_convolution_with_doutput_as_kernel input doutput stride padding =
                 let w_pos = w_start + dkw in
                 if h_pos >= 0 && h_pos < input_h && w_pos >= 0 && w_pos < input_w then
                   (* 进行卷积操作 *)
-                  sum := !sum +. input.data.((((b * out_channel + oc) * input_channel + ic) * input_h + h_pos) * input_w + w_pos) *. 
-                            doutput.data.((((b * out_channel + oc) * input_channel + ic) * output_h + dkh) * output_w + dkw)
+                  sum := !sum +. input.data.((((b) * input_channel + ic) * input_h + h_pos) * input_w + w_pos) *. 
+                            doutput.data.((((b * out_channel + oc))* output_h + dkh) * output_w + dkw)
               done
             done;
 
@@ -1305,3 +1326,22 @@ let image_scale t =
   done;
 
   {data = normalized_data; shape = t.shape}
+
+(* 计算 ndarray 的 L2 范数 *)
+let l2_norm (nd: t) : float =
+  Array.fold_left (fun acc x -> acc +. x *. x) 0.0 nd.data |> Stdlib.sqrt
+
+(* 原地裁剪 ndarray 数据到指定范数范围内 *)
+let clip_by_norm (nd: t) (clip_value: float) : unit =
+  let norm = l2_norm nd in
+  if norm > clip_value then
+    let scale = clip_value /. norm in
+    Array.iteri (fun i x -> nd.data.(i) <- x *. scale) nd.data
+
+let clip_by_range (nd: t) (min_value: float) (max_value: float) : unit =
+  Array.iteri (fun i x ->
+    if Float.abs x > max_value then
+      nd.data.(i) <- (if x > 0. then max_value else -.max_value)
+    else if Float.abs x < min_value then
+      nd.data.(i) <- (if x > 0. then min_value else -.min_value)
+  ) nd.data

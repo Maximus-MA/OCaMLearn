@@ -219,6 +219,8 @@ let test_sub () =
 
   (* Test Case 2: Matrix minus vector *)
   let a = { data = [|5.0; 6.0; 7.0; 8.0|]; shape = [|2; 2|] } in
+  let b = dargmax a 0 in 
+  print_shape b.shape;
   let b = { data = [|1.0; 2.0|]; shape = [|2|] } in
   let c = sub a b in
   Printf.printf "Test Case 2 - Result shape: ";

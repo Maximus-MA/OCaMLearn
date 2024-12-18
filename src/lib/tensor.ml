@@ -613,11 +613,11 @@ let conv2d t kernel ~stride ~padding =
       (* print_shape grad_t.shape; *)
       accumulate_grad t grad_t;
     if kernel.requires_grad then
-      let in_channel = t.data.shape.(1) in
-      let out_channel = kernel.data.shape.(0) in
-      let expanded_doutput = Ndarray.expand_doutput grad_output in_channel in
-      let expended_input = Ndarray.expand_input t.data out_channel in
-      let layerwise_convolution_result = Ndarray.layerwise_convolution_with_doutput_as_kernel expended_input expanded_doutput stride padding in
+      (* let in_channel = t.data.shape.(1) in *)
+      (* let out_channel = kernel.data.shape.(0) in *)
+      (* let expanded_doutput = Ndarray.expand_doutput grad_output in_channel in *)
+      (* let expended_input = Ndarray.expand_input t.data out_channel in *)
+      let layerwise_convolution_result = Ndarray.layerwise_convolution_with_doutput_as_kernel t.data grad_output stride padding in
       (* Printf.printf "expanded_doutput.shape\n"; *)
       (* print_shape expanded_doutput.shape; *)
       (* Printf.printf "expended_input.shape\n"; *)

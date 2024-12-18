@@ -15,7 +15,10 @@ let not_implemented feature_name =
 
 let create_SGD ~params ~lr =
   let step = fun () -> List.iter params ~f:(fun param->
-                         Tensor.(param.data <- Ndarray.sub param.data (Ndarray.mul param.grad (Ndarray.scaler lr)))) in
+                        (* Tensor.(Ndarray.clip_by_norm param.grad 5.0); *)
+                        (* Tensor.(Ndarray.clip_by_range param.grad 0.00001 3.0); *)
+                        (* Tensor.(Printf.printf "param.grad: %s\n" (Ndarray.to_string param.grad)); *)
+                        Tensor.(param.data <- Ndarray.sub param.data (Ndarray.mul param.grad (Ndarray.scaler lr)))) in
   let zero_grad = fun () -> List.iter params ~f:(fun param -> Tensor.zero_grad param) in
   { parameters = params; step = step; zero_grad = zero_grad }
 
