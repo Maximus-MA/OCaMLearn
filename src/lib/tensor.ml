@@ -2,6 +2,10 @@
 [@@@ocaml.warning "-27"]
 
 (* open Core *)
+let print_shape shape =
+  Printf.printf "[%s]\n"
+    (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
+;;
 
 type ndarray = Ndarray.t
 
@@ -498,8 +502,8 @@ let neg t =
     );
   t_new
   
-
 let relu t =
+  Printf.printf "start relu";
   let data = Ndarray.relu t.data in
   let requires_grad = t.requires_grad in
   let prev = [t] in
@@ -510,7 +514,9 @@ let relu t =
     let grad_input = Ndarray.mul grad_output mask in
     (* Printf.printf "[%s]\n" (Ndarray.to_string grad_input); *)
     accumulate_grad t grad_input);
+  Printf.printf "finish relu";
   res
+  
 
 let softmax t =
   let max_vals = Ndarray.dmax t.data (Ndarray.dim t.data - 1) in
@@ -580,12 +586,19 @@ let slice t ranges  =
   res
 
 let conv2d t kernel ~stride ~padding =
-  
-  Printf.printf "Shape of kernel in the tensor conv2d %d\n" (Array.length kernel.data.shape);
+  Printf.printf "Tensor Conv2d\n";
+  print_shape t.data.shape;
+  print_shape kernel.data.shape;
+
   let data = Ndarray.conv2d t.data kernel.data ~stride ~padding in
+  Printf.printf "Finish nd\n";
+
   let requires_grad = t.requires_grad || kernel.requires_grad in
+  Printf.printf "1\n";
   let prev = [t; kernel] in
+  Printf.printf "2\n";
   let res = create ~data ~requires_grad ~prev in
+  Printf.printf "3\n";
   res.backward_fn <- Some (fun () ->
     let grad_output = res.grad in
     if t.requires_grad then
@@ -599,10 +612,13 @@ let conv2d t kernel ~stride ~padding =
       let grad_kernel = Ndarray.conv2d t.data grad_output ~stride:1 ~padding:0 in
       accumulate_grad kernel grad_kernel
   );
+  Printf.printf "Finish tensor conv2d\nThe output shape is:\n";
+  print_shape res.data.shape;
   res
 
 
   let meanpool2d t ~kernel_size ~stride =
+    Printf.printf "start mean\n";
     let input_shape = t.data.shape in
     let batch_size = input_shape.(0) in
     let channels = input_shape.(1) in
@@ -701,6 +717,7 @@ let conv2d t kernel ~stride ~padding =
         accumulate_grad t grad_input
       );
   
+    Printf.printf "end mean\n";
     res
   
   

@@ -71,7 +71,6 @@ let create_Flatten () =
     Tensor.reshape x ~shape:[|batch; -1|] in
   create ~parameters ~forward_fn
 
-
 let create_Sequential layers =
   let parameters = List.concat (List.map ~f:get_parameters layers) in
   let forward_fn inputs = layers |>
@@ -86,7 +85,6 @@ let create_ReLU () =
     Tensor.relu x in
   create ~parameters:[] ~forward_fn
 
-
 let create_Sigmoid () =
   let forward_fn inputs =
     let x = List.hd_exn inputs in
@@ -99,7 +97,6 @@ let create_Softmax () =
     Tensor.softmax x
   in
   create ~parameters:[] ~forward_fn
-  
 
 let create_MSE () =
   let forward_fn inputs =
