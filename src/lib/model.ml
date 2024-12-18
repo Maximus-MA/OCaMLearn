@@ -98,14 +98,24 @@ let create_Softmax () =
 let create_MSE () =
   not_implemented "create_MSE"
 
-  let create_CrossEntropy () =
-    let forward_fn inputs =
-      let logits = List.nth_exn inputs 0 in
-      let targets = List.nth_exn inputs 1 in
-      let log_probs = Tensor.log_softmax logits in
-	  (* Printf.printf "hello"; *)
-      let loss = Tensor.neg (Tensor.mean ~dim:0(Tensor.dsum (Tensor.mul targets log_probs) (Ndarray.dim logits.data - 1))) in
-      loss
-    in
-    create ~parameters:[] ~forward_fn
-  
+(* let create_CrossEntropy () =
+  let forward_fn inputs =
+    let logits = List.nth_exn inputs 0 in
+    let targets = List.nth_exn inputs 1 in
+    let log_probs = Tensor.log_softmax logits in
+  (* Printf.printf "hello"; *)
+    let loss = Tensor.neg (Tensor.mean ~dim:0(Tensor.dsum (Tensor.mul targets log_probs) (Ndarray.dim logits.data - 1))) in
+    loss
+  in
+  create ~parameters:[] ~forward_fn
+  *)
+
+let create_CrossEntropy () =
+  let forward_fn inputs =
+    let logits = List.nth_exn inputs 0 in  (* 模型输出 [batch_size, num_classes] *)
+    let targets = List.nth_exn inputs 1 in (* one-hot 编码 [batch_size, num_classes] *)
+    let log_probs = Tensor.log_softmax logits in
+    let loss = Tensor.neg (Tensor.mean (Tensor.sum (Tensor.mul targets log_probs) ~dim:(Ndarray.dim logits.data - 1))) in
+    loss
+  in
+  create ~parameters:[] ~forward_fn
