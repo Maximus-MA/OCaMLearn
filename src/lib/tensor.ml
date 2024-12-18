@@ -35,7 +35,15 @@ let from_ndarray ?(requires_grad=true) data  =
     backward_fn = None;
     prev = [];
   }
-  
+
+let scaler x =
+  {
+    data = Ndarray.scaler x;
+    grad = Ndarray.scaler 0.0;
+    requires_grad = false;
+    backward_fn = None;
+    prev = [];
+  }
 
 let zeros shape =
   let data = Ndarray.zeros shape in
@@ -407,7 +415,17 @@ let dnormalize t dim =
   not_implemented "dnormalize"
 
 let dmax t dim =
-  not_implemented "dmax"
+  let data = Ndarray.dmax t.data dim in
+  let requires_grad = t.requires_grad in
+  let prev = [t] in
+  let res = create ~data ~requires_grad ~prev in
+  if requires_grad then
+    res.backward_fn <- Some (fun () ->
+      let grad_output = res.grad in
+      let grad_input = Ndarray.expand_dims grad_output dim in
+      (* Printf.printf "[%s]\n" (Ndarray.to_string grad_input); *)
+      accumulate_grad t grad_input);
+  res
 
 let dmin t dim =
   not_implemented "dmin"
@@ -420,8 +438,23 @@ let dargmin t dim =
 
 (* Element-wise mathematical functions *)
 let exp t =
-  not_implemented "exp"
-  (* TODO *)
+  let data = Ndarray.exp t.data in
+  let requires_grad = t.requires_grad in
+  let t_new = {
+    data;
+    grad = Ndarray.zeros (Ndarray.shape data);
+    requires_grad;
+    backward_fn = None;
+    prev = [t];
+  } in
+  (* Ndarray.print_shape t_new.grad.shape; *)
+  if requires_grad then
+    t_new.backward_fn <- Some (fun () ->
+      let grad_output = t_new.grad in
+      let grad_input = Ndarray.mul grad_output t.data in
+      (* Printf.printf "[%s]\n" (Ndarray.to_string grad_input); *)
+      accumulate_grad t grad_input);
+  t_new
 
 let log t =
   not_implemented "log"

@@ -10,8 +10,8 @@ type t = {
 } [@@deriving show]
 
 (* Placeholder for unimplemented functions *)
-let not_implemented feature_name =
-  failwith (feature_name ^ " is not yet implemented")
+(* let not_implemented feature_name =
+  failwith (feature_name ^ " is not yet implemented") *)
 
 let create ~parameters ~forward_fn =
   { parameters; forward_fn }
@@ -86,13 +86,10 @@ let create_ReLU () =
 
 
 let create_Sigmoid () =
-  not_implemented "create_Sigmoid"
-
-let create_LeakyReLU ?alpha =
-  not_implemented "create_LeakyReLU"
-
-let create_Tanh () =
-  not_implemented "create_Tanh"
+  let forward_fn inputs =
+    let x = List.hd_exn inputs in
+    Tensor.(div (scaler 1.0) (add (scaler 1.0) (exp (neg x)))) in
+  create ~parameters:[] ~forward_fn
 
 let create_Softmax () =
   let forward_fn inputs =
@@ -103,7 +100,13 @@ let create_Softmax () =
   
 
 let create_MSE () =
-  not_implemented "create_MSE"
+  let forward_fn inputs =
+    let logits = List.nth_exn inputs 0 in
+    let targets = List.nth_exn inputs 1 in
+    let loss = Tensor.mean (Tensor.pow (Tensor.sub logits targets) 2) in
+    loss
+  in
+  create ~parameters:[] ~forward_fn
 
 let create_CrossEntropy () =
   let forward_fn inputs =
@@ -111,8 +114,12 @@ let create_CrossEntropy () =
     let targets = List.nth_exn inputs 1 in
     let log_probs = Tensor.log_softmax logits in
   (* Printf.printf "hello"; *)
-    let loss = Tensor.neg (Tensor.mean ~dim:0(Tensor.dsum (Tensor.mul targets log_probs) (Ndarray.dim logits.data - 1))) in
+    let loss = Tensor.neg (Tensor.mean ~dim:0 (Tensor.dsum (Tensor.mul targets log_probs) (Ndarray.dim logits.data - 1))) in
     loss
   in
   create ~parameters:[] ~forward_fn
+<<<<<<< HEAD
  
+=======
+ 
+>>>>>>> 88958409a2c2f9772ffbe4acaf9f42e7c34309ef
