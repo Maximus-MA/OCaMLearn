@@ -1,10 +1,10 @@
 (* src/ndarray.ml *)
 [@@@ocaml.warning "-27"]
 
-(* let print_shape shape =
+let print_shape shape =
   Printf.printf "[%s]\n"
     (Stdlib.String.concat "; " (Stdlib.Array.to_list (Stdlib.Array.map string_of_int shape)))
-;; *)
+;;
 
 (* let print_data data =
   Printf.printf "[%s]\n"
@@ -464,13 +464,42 @@ let at arr indices =
 
 (* reshape function *)
 let reshape (arr: t) (new_shape: int array) : t =
-  let old_size = numel arr.shape in
-  let new_size = numel new_shape in
+  let old_size = numel arr.shape in  (* 原始数据总元素个数 *)
+
+  (* 统计 new_shape 中的 -1 并计算已知维度的乘积 *)
+  let num_neg_ones = ref 0 in
+  let known_size = ref 1 in
+  Array.iter (fun dim ->
+    if dim = -1 then incr num_neg_ones
+    else if dim > 0 then known_size := !known_size * dim
+    else failwith "Reshape error: dimensions must be positive or -1"
+  ) new_shape;
+
+  (* 检查 -1 的个数是否合理 *)
+  if !num_neg_ones > 1 then
+    failwith "Reshape error: only one dimension can be inferred (-1)";
+
+  (* 计算 -1 所代表的维度 *)
+  let inferred_shape =
+    if !num_neg_ones = 1 then
+      let inferred_dim = old_size / !known_size in
+      if old_size mod !known_size <> 0 then
+        failwith "Reshape error: total number of elements must remain unchanged";
+      Array.map (fun dim -> if dim = -1 then inferred_dim else dim) new_shape
+    else
+      new_shape
+  in
+
+
+  (* 验证最终的元素总数 *)
+  let new_size = numel inferred_shape in
   if old_size <> new_size then
-    failwith "Reshape error: total number of elements must remain unchanged"
-  else
-    { data = arr.data; shape = new_shape }
+    failwith "Reshape error: total number of elements must remain unchanged";
+
+  (* 返回新的张量结构 *)
+  { data = arr.data; shape = inferred_shape }
 ;;
+
 
 
 (* ------------------------------------------------------------------------------------------- *)
@@ -1101,6 +1130,9 @@ let transpose_last_two_dims t =
 
 let conv2d input kernel ~stride ~padding =
   Printf.printf "start nd con2v\n";
+  print_shape input.shape;
+  print_shape kernel.shape;
+
   let batch_size, in_channels, in_height, in_width = input.shape.(0), input.shape.(1), input.shape.(2), input.shape.(3) in
   let out_channels, _, kernel_height, kernel_width = kernel.shape.(0), kernel.shape.(1), kernel.shape.(2), kernel.shape.(3) in
 
@@ -1134,6 +1166,7 @@ let conv2d input kernel ~stride ~padding =
     done
   done;
   Printf.printf "finish nd con2v\n";
+  print_shape output.shape;
   output
 
     
@@ -1172,7 +1205,7 @@ let conv2d input kernel ~stride ~padding =
   done;
   output *)
 
-  let rotate180 t =
+  (* let rotate180 t =
     let ndim = Array.length t.shape in
     let new_shape = Array.copy t.shape in
     new_shape.(ndim - 1) <- t.shape.(ndim - 2);
@@ -1195,4 +1228,30 @@ let conv2d input kernel ~stride ~padding =
         done
       done
     done;
-    { data = new_data; shape = new_shape }  
+    { data = new_data; shape = new_shape }   *)
+
+    let rotate180 kernel =
+      let out_channels = kernel.shape.(0) in
+      let in_channels = kernel.shape.(1) in
+      let kernel_height = kernel.shape.(2) in
+      let kernel_width = kernel.shape.(3) in
+    
+      (* 创建一个新 ndarray，交换前两维度 *)
+      let flipped_kernel = zeros [| in_channels; out_channels; kernel_height; kernel_width |] in
+    
+      (* 填充新 ndarray，旋转最后两个维度 *)
+      for oc = 0 to out_channels - 1 do
+        for ic = 0 to in_channels - 1 do
+          for kh = 0 to kernel_height - 1 do
+            for kw = 0 to kernel_width - 1 do
+              (* 旋转 180 度对应的索引 *)
+              let flipped_kh = kernel_height - 1 - kh in
+              let flipped_kw = kernel_width - 1 - kw in
+              (* 交换前两维度，并修复索引计算 *)
+              flipped_kernel.data.((ic * out_channels + oc) * kernel_height * kernel_width + flipped_kh * kernel_width + flipped_kw) <-
+                kernel.data.((oc * in_channels + ic) * kernel_height * kernel_width + kh * kernel_width + kw)
+            done
+          done
+        done
+      done;
+      flipped_kernel

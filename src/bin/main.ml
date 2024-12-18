@@ -210,14 +210,14 @@ let example_mnist () =
   Printf.printf "Create Model\n";
   let model = Model.create_Sequential [
     (* 第1层：卷积层 + ReLU 激活 *)
-    Model.create_Conv2d ~in_channels:1 ~out_channels:32 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:false;
+    Model.create_Conv2d ~in_channels:1 ~out_channels:32 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:true;
     Model.create_ReLU ();
   
     (* 第2层：池化层 *)
     Model.create_MeanPool2d ~kernel_size:2 ~stride:2;
   
     (* 第3层：卷积层 + ReLU 激活 *)
-    Model.create_Conv2d ~in_channels:32 ~out_channels:64 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:false;
+    Model.create_Conv2d ~in_channels:32 ~out_channels:64 ~kernel_size:3 ~stride:1 ~padding:1 ~bias:true;
     Model.create_ReLU ();
   
     (* 第4层：池化层 *)
@@ -267,20 +267,22 @@ let example_mnist () =
         Printf.printf "Batch %d/%d\n" batch_idx total_batches;
         flush stdout;
         let batch = Dataloader.get_batch train_loader batch_idx in
-        Printf.printf "1\n";
+        Printf.printf "111\n";
         print_shape batch.data.data.shape;
         let output = Model.forward model [batch.data] in
-        Printf.printf "2\n";
+        Printf.printf "222\n";
         let loss = Model.forward loss_func [output; batch.label] in
-        Printf.printf "3\n";
+        Printf.printf "333\n";
         total_loss := !total_loss +. loss.data.data.(0);
-        Printf.printf "4\n";
+        Printf.printf "444\n";
         optimizer.zero_grad ();
-        Printf.printf "5\n";
+        Printf.printf "555\n";
+        
         Utils.backprop loss;
-        Printf.printf "6\n";
+        
+        Printf.printf "666\n";
         optimizer.step ();
-        Printf.printf "6\n"
+        Printf.printf "777\n"
       done;
       let avg_loss = !total_loss /. float_of_int total_batches in
       let test_acc = test () in
