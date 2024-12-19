@@ -1,29 +1,19 @@
 (lang dune 3.16)
 
-(name OCaML)
-
-(generate_opam_files true)
-
-
+(name OCaMLearn)
 
 (source
- (github username/reponame))
+ (github Maximus-MA/OCaMLearn))
 
-(authors "Author Name")
+(authors "Suizhi Ma" "Chuan Chen" "Jixiao Zhang" "Rui Wang")
 
-(maintainers "Maintainer Name")
+(maintainers "Suizhi Ma")
 
 (license LICENSE)
 
-(documentation https://url/to/documentation)
-
 (package
- (name OCaML)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
- (tags
-  (topics "to describe" your project))
- (allow_empty))
+ (name OCaMLearn)
+ (synopsis "An OCaml library for Machine Learning Framework")
+ (description "A machine learning library in OCaml, inspired by PyTorch, to provide the essential components for building and training machine learning models.")
+ (depends ocaml dune csv))
 
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html

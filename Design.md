@@ -2,11 +2,6 @@
 
 
 
-## Project Overview
-
-Our project aims to develop a machine learning library in OCaml that provides essential components for building and training machine learning models. It includes modules for handling multi-dimensional arrays (`Ndarray`), building and manipulating `Tensor`s, defining models and layers, implementing optimizers, managing datasets and data loading, applying data transformations, and miscellaneous utilities. The goal is to create a structured, OCaml-native machine learning library capable of handling various model architectures and training tasks, such as those required for MNIST classification with Convolutional Neural Networks. 
-
-
 
 ## Module Design Detail
 
@@ -84,14 +79,14 @@ The `Tensor` module builds on top of `ndarray`, enabling gradient tracking and b
 ```ocaml
 type ndarray = Ndarray.t
 
+type ndarray = Ndarray.t
+
 type t = {
-  data: ndarray;                    (* The tensor's data as an ndarray *)
-  grad: ndarray option;             (* Gradient of the tensor, if required *)
-  requires_grad: bool;              (* Indicates if the tensor requires gradient computation *)
-  backward_fn: (unit -> unit) option;  
-  (* Function to compute gradients for backpropagation *)
-  prev: t list;                     
-  (* List of previous tensors for backpropagation *)
+  mutable data: ndarray;
+  mutable grad: ndarray;
+  requires_grad: bool;
+  mutable backward_fn: (unit -> unit) option;
+  prev: t list;
 }
 ```
 
@@ -159,8 +154,8 @@ The `Dataset` module is designed to process and manipulate data samples and thei
 
 ```ocaml
 type t = {
-  data : ndarray;   (* The data for the dataset. *)
-  label : ndarray;  (* The labels for the dataset. *)
+  data : ndarray; 
+  label : ndarray; 
 }
 
 ```
@@ -191,9 +186,9 @@ The `DataLoader` module is designed to manage and organize data batching, shuffl
 
 ```ocaml
 type t = {
-  dataset : tensor_dataset;  (* Tensor dataset used for loading batches. *)
-  batch_size : int;          (* Number of samples per batch. *)
-  total_batches : int;       (* Total number of batches available. *)
+  dataset : tensor_dataset; 
+  batch_size : int; 
+  total_batches : int;
 }
 
 ```
@@ -231,11 +226,11 @@ The `Transform` structure allows for modular and composable operations. Each tra
 The `Transform` module provides the following core transformations:
 
 - **`normalize`**: Standardizes the tensor to have a mean of 0 and standard deviation of 1, preparing it for models sensitive to scale.
-- **`resize`**: Adjusts the dimensions of the tensor to the desired width and height.
+<!-- - **`resize`**: Adjusts the dimensions of the tensor to the desired width and height.
 - **`rotate`**: Rotates the tensor by a specified angle, introducing rotational variations.
-- **`translate`**: Shifts the tensor along the x and y axes by given offsets.
-- **`scale`**: Resizes the tensor dynamically by applying scaling factors along the x and y dimensions.
-- **`flip`**: Flips the tensor horizontally, vertically, or both, enhancing data variability.
+- **`translate`**: Shifts the tensor along the x and y axes by given offsets. -->
+- **`image_scale`**: Resizes the tensor dynamically by applying scaling factors along the x and y dimensions.
+<!-- - **`flip`**: Flips the tensor horizontally, vertically, or both, enhancing data variability. -->
 
 ---
 
@@ -540,65 +535,3 @@ done
 
 The Core library was widely used in this course, so no additional testing is required here*.\
 *Discussed with and approved by Prof. Scott Smith.
-
-
-
-# Project Implementation Plan
-
-### Phase 1: Foundational Modules (11/13 - 11/27)
-
-#### 1. Ndarray Module (Chuan Chen, Rui Wang)
-
-- **Goals**: Implement a foundational data structure for multidimensional arrays with support for common operations.
-- **Steps**:
-  - Define the foundational  `Ndarray` type
-  - Implement core functions: addition, subtraction, multiplication, and division (both element-wise and scalar).
-  - Implement statistical operations: mean, variance, standard deviation, min, and max.
-  - Implement broadcasting logic to support operations across different shapes.
-
-#### 2. Tensor Module (Suizhi Ma, Jixiao Zhang)
-
-- **Goals**: Develop the `Tensor` type, adding gradients, autograd capabilities, and integration with `Ndarray`.
-- **Steps**:
-  - Define the `Tensor` type, integrating an `Ndarray` for data and another for gradient.
-  - Implement core functions: addition, subtraction, multiplication, and division (both element-wise and scalar) with automatic differentiation.
-  - Implement statistical operations: mean, variance, standard deviation, min, and max with automatic differentiation.
-
-
-### Phase 2: Model & Data Modules (11/27 - 12/4)
-
-#### 3. Model Module (Suizhi Ma, Jixiao Zhang)
-
-- **Goals**: Design and implement the core model interface, supporting common layers and building blocks.
-- **Steps**:
-  - Define `Model` type with essential functions: `forward` and `parameters`.
-  - Implement `Linear` and `Conv2D` layers as basic models.
-  - Add `sequential` models to enable stacking of layers, and set up utilities for parameter initialization.
-
-#### 4. Optimizer, Dataset, DataLoader, and Transform Modules (Chuan Chen, Rui Wang)
-
-- **Goals**: Implement support for model training, data handling, and transformation.
-- **Steps**:
-  - **Optimizer**: Implement standard optimizers (`SGD`, `Adam`), connecting to `Model` parameters.
-  - **Dataset**: Create a `Dataset` type with a `get_item` interface for easy data retrieval.
-  - **DataLoader**: Add `DataLoader` for batch management and dataset shuffling.
-  - **Transform**: Implement common transforms (normalization, standardization, data augmentation) for data preprocessing.
-
-
-### Phase 3: Testing, Debugging, and Training (12/5 - 12/18)
-
-#### 5. Testing and Debugging (All Team Members)
-
-- **Goals**: Ensure all modules function correctly and integrate seamlessly; fix bugs and optimize code.
-- **Steps**:
-  - Write unit tests for each module (`Ndarray`, `Tensor`, `Model`, etc.), ensuring each function behaves as expected.
-  - Integrate module testing with OCaml testing libraries.
-  - Debug autograd in `Tensor`, optimizer steps, and DataLoader batching.
-
-#### 6. Model Training and Experiments
-
-- **Goals**: Run initial experiments on MNIST and other datasets to verify model and optimizer implementations.
-- **Steps**:
-  - Implement a convolutional neural network (CNN) for MNIST classification.
-  - Test the training pipeline with different architectures and optimizers, observing convergence behavior.
-
