@@ -1186,6 +1186,238 @@ let test_transpose_last_two_dims () =
     Printf.printf "%.1f " x
   ) output.data;
   Printf.printf "\n"
+
+let test_randn () =
+  (* Define the shape of the tensor to be generated *)
+  let shape = [| 2; 3 |] in
+
+  (* Generate a random tensor using randn *)
+  let tensor = Ndarray.randn shape in
+
+  (* Verify the shape *)
+  assert (tensor.shape = shape);
+  Printf.printf "Generated tensor shape: [%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_int tensor.shape)));
+
+  (* Print the data *)
+  Printf.printf "Generated tensor data:\n";
+  Array.iteri (fun i x ->
+    Printf.printf "%.6f " x;
+    if (i + 1) mod shape.(1) = 0 then Printf.printf "\n"
+  ) tensor.data;
+
+  (* Ensure the data is not constant (basic validation for randomness) *)
+  let unique_values = Array.to_list tensor.data |> List.sort_uniq compare in
+  assert (List.length unique_values > 1);
+
+  Printf.printf "Test for randn completed successfully.\n"
+
+let test_flip_and_swap_kernel () =
+  (* Define a sample kernel: out_channels=2, in_channels=1, height=3, width=3 *)
+  let kernel_data = [|
+    (* Kernel for output channel 0 *)
+    1.0; 2.0; 3.0;
+    4.0; 5.0; 6.0;
+    7.0; 8.0; 9.0;
+
+    (* Kernel for output channel 1 *)
+    -1.0; -2.0; -3.0;
+    -4.0; -5.0; -6.0;
+    -7.0; -8.0; -9.0;
+  |] in
+  let kernel_shape = [| 2; 1; 3; 3 |] in
+  let kernel = { data = kernel_data; shape = kernel_shape } in
+
+  (* Flip and swap the kernel *)
+  let flipped_kernel = flip_and_swap_kernel kernel in
+
+  (* Print original kernel *)
+  Printf.printf "Original kernel shape: [%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_int kernel.shape)));
+  Printf.printf "Original kernel data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod kernel.shape.(3) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) kernel.data;
+  Printf.printf "\n\n";
+
+  (* Print flipped and swapped kernel *)
+  Printf.printf "Flipped and swapped kernel shape: [%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_int flipped_kernel.shape)));
+  Printf.printf "Flipped and swapped kernel data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod flipped_kernel.shape.(3) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) flipped_kernel.data;
+  Printf.printf "\n\n";
+
+  (* Validate the transformation *)
+  let out_channels = kernel_shape.(0) in
+  let in_channels = kernel_shape.(1) in
+  let kernel_height = kernel_shape.(2) in
+  let kernel_width = kernel_shape.(3) in
+  for oc = 0 to out_channels - 1 do
+    for ic = 0 to in_channels - 1 do
+      for kh = 0 to kernel_height - 1 do
+        for kw = 0 to kernel_width - 1 do
+          (* Flipped indices for the last two dimensions *)
+          let flipped_kh = kernel_height - 1 - kh in
+          let flipped_kw = kernel_width - 1 - kw in
+          (* Check swapped first two dimensions and rotated last two dimensions *)
+          let original_value =
+            kernel.data.((oc * in_channels + ic) * kernel_height * kernel_width + kh * kernel_width + kw) in
+          let flipped_value =
+            flipped_kernel.data.((ic * out_channels + oc) * kernel_height * kernel_width + flipped_kh * kernel_width + flipped_kw) in
+          assert (original_value = flipped_value)
+        done
+      done
+    done
+  done;
+  Printf.printf "Test for flip_and_swap_kernel completed successfully.\n"
+let test_layerwise_convolution_with_doutput_as_kernel () =
+  (* Define input tensor: batch_size=1, input_channel=1, height=4, width=4 *)
+  let input_data = [|
+    1.0; 2.0; 3.0; 4.0;
+    5.0; 6.0; 7.0; 8.0;
+    9.0; 10.0; 11.0; 12.0;
+    13.0; 14.0; 15.0; 16.0
+  |] in
+  let input_shape = [| 1; 1; 4; 4 |] in
+  let input = { data = input_data; shape = input_shape } in
+
+  (* Define doutput tensor: batch_size=1, out_channel=1, height=2, width=2 *)
+  let doutput_data = [|
+    1.0; 2.0;
+    3.0; 4.0
+  |] in
+  let doutput_shape = [| 1; 1; 2; 2 |] in
+  let doutput = { data = doutput_data; shape = doutput_shape } in
+
+  (* Define stride and padding *)
+  let stride = 1 in
+  let padding = 0 in
+
+  (* Perform layerwise convolution with doutput as kernel *)
+  let output = layerwise_convolution_with_doutput_as_kernel input doutput stride padding in
+
+  (* Print input tensor *)
+  Printf.printf "Input shape: [%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_int input.shape)));
+  Printf.printf "Input data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod input.shape.(3) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) input.data;
+  Printf.printf "\n\n";
+
+  (* Print doutput tensor *)
+  Printf.printf "dOutput shape: [%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_int doutput.shape)));
+  Printf.printf "dOutput data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod doutput.shape.(3) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) doutput.data;
+  Printf.printf "\n\n";
+
+  (* Print output tensor *)
+  Printf.printf "Output shape: [%s]\n"
+    (String.concat "; " (Array.to_list (Array.map string_of_int output.shape)));
+  Printf.printf "Output data:\n";
+  Array.iteri (fun i x ->
+    if i > 0 && i mod output.shape.(4) = 0 then Printf.printf "\n";
+    Printf.printf "%.1f " x
+  ) output.data;
+  Printf.printf "\n";
+
+  (* Verify the correctness of output *)
+  (* Example for manual computation or further comparison *)
+  (* Here, you can include specific assertions to validate expected results *)
+  Printf.printf "Test completed successfully.\n"
+
+let test_image_scale () =
+  (* Define input tensor *)
+  let input_data = [| 0.0; 127.5; 255.0 |] in
+  let input_shape = [| 3 |] in
+  let input = { data = input_data; shape = input_shape } in
+
+  (* Perform image scaling *)
+  let output = image_scale input in
+
+  (* Print input and output data *)
+  Printf.printf "Input data: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float input.data)));
+  Printf.printf "Scaled data: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float output.data)));
+
+  (* Assertions *)
+  assert (output.data = [| -1.0; 0.0; 1.0 |]);
+  Printf.printf "test_image_scale passed.\n"
+
+let test_l2_norm () =
+  (* Define input tensor *)
+  let input_data = [| 3.0; 4.0 |] in
+  let input_shape = [| 2 |] in
+  let input = { data = input_data; shape = input_shape } in
+
+  (* Compute L2 norm *)
+  let norm = l2_norm input in
+
+  (* Print and assert the result *)
+  Printf.printf "Input data: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float input.data)));
+  Printf.printf "L2 norm: %.2f\n" norm;
+  assert (abs_float (norm -. 5.0) < 1e-6);
+  Printf.printf "test_l2_norm passed.\n"
+let test_clip_by_norm () =
+  (* Define input tensor *)
+  let input_data = [| 5.0; 6.0 |] in
+  let input_shape = [| 2 |] in
+  let input = { data = Array.copy input_data; shape = input_shape } in
+
+  (* Clip by norm *)
+  clip_by_norm input 5.0;
+
+  (* Print and assert the result *)
+  Printf.printf "Clipped data: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float input.data)));
+  assert (abs_float (l2_norm input -. 5.0) < 1e-6);
+  Printf.printf "test_clip_by_norm passed.\n"
+
+let test_clip_by_range () =
+  (* Define input tensor *)
+  let input_data = [| -10.0; -0.5; 0.5; 3.0; 10.0 |] in
+  let input_shape = [| 5 |] in
+  let input = { data = Array.copy input_data; shape = input_shape } in
+
+  (* Clip by range *)
+  clip_by_range input 1.0 5.0;
+
+  (* Print and assert the result *)
+  Printf.printf "Clipped data: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float input.data)));
+  assert (input.data = [| -5.0; -1.0; 1.0; 3.0; 5.0 |]);
+  Printf.printf "test_clip_by_range passed.\n"
+
+let test_normalize () =
+  (* Define a simple input tensor with shape (2, 2) *)
+  let input_data = [| 1.0; 2.0; 3.0; 4.0 |] in
+  let input_shape = [| 2; 2 |] in
+  let input = { data = input_data; shape = input_shape } in
+
+  (* Normalize the input tensor *)
+  let output = normalize input in
+
+  (* Compute expected mean and std values for verification *)
+  let expected_mean = [| 0.0; 0.0 |] in
+
+  (* Print input and output tensors *)
+  Printf.printf "Input data: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float input.data)));
+  Printf.printf "Normalized data: [%s]\n" (String.concat "; " (Array.to_list (Array.map string_of_float output.data)));
+
+  (* Assertions for correctness *)
+  let is_close x y = abs_float (x -. y) < 1e-6 in
+  assert (Array.for_all2 is_close expected_mean (dmean output 0).data);
+
+  (* Check normalized output *)
+  assert (Array.for_all (fun x -> abs_float x <= 1.0) output.data);
+  Printf.printf "test_normalize passed.\n"
+  
 (* Main test function *)
 let () =
   Printf.printf "Start Test!";
@@ -1231,4 +1463,12 @@ let () =
   test_pad_shape_to ();
   test_conv2d ();
   test_transpose_last_two_dims ();
+  test_randn ();
+  test_flip_and_swap_kernel ();
+  test_layerwise_convolution_with_doutput_as_kernel ();
+  test_image_scale ();
+  test_l2_norm ();
+  test_clip_by_norm ();
+  test_clip_by_range ();
+  test_normalize ();
 ;;

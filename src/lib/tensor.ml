@@ -371,7 +371,7 @@ let exp t =
   if requires_grad then
     t_new.backward_fn <- Some (fun () ->
       let grad_output = t_new.grad in
-      let grad_input = Ndarray.mul grad_output t.data in
+      let grad_input = Ndarray.mul grad_output t_new.data in
       accumulate_grad t grad_input);
   t_new
 
@@ -593,7 +593,7 @@ let meanpool2d t ~kernel_size ~stride =
 let to_string t =
   Printf.sprintf "Tensor {data = %s, requires_grad = %b}" (Ndarray.to_string t.data) t.requires_grad
 
-let expand t new_shape =
+(* let expand t new_shape =
   not_implemented "expand"
 
 let concatenate ts dim =
@@ -661,4 +661,4 @@ let dargmax t dim =
   not_implemented "dargmax"
 
 let dargmin t dim =
-  not_implemented "dargmin"
+  not_implemented "dargmin" *)

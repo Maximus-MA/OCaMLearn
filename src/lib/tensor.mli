@@ -148,72 +148,72 @@ val meanpool2d :t -> kernel_size:int -> stride:int -> t
 
 
 
-val expand : t -> int array -> t
+(* val expand : t -> int array -> t *)
 (** [expand t new_shape] expands tensor [t] to match [new_shape] using broadcasting if necessary. *)
 
-val concatenate : t list -> int -> t
+(* val concatenate : t list -> int -> t *)
 (** [concatenate ts dim] concatenates a list of tensors [ts] along the specified dimension [dim]. *)
 
-val split : t -> int -> t list
+(* val split : t -> int -> t list *)
 (** [split t dim] splits tensor [t] along the specified dimension [dim] into a list of sub-tensors. *)
 
-val variance : t -> t
+(* val variance : t -> t *)
 (** [variance t] calculates the variance of all elements in tensor [t]. *)
 
-val std : t -> t
+(* val std : t -> t *)
 (** [std t] calculates the standard deviation of all elements in tensor [t]. *)
 
-val normalize : t -> t
+(* val normalize : t -> t *)
 (** [normalize t] normalizes tensor [t] to have a mean of 0 and standard deviation of 1. *)
 
-val max : t -> t
+(* val max : t -> t *)
 (** [max t] finds the maximum value in tensor [t]. *)
 
-val min : t -> t
+(* val min : t -> t *)
 (** [min t] finds the minimum value in tensor [t]. *)
 
-val argmax : t -> t
+(* val argmax : t -> t *)
 (** [argmax t] returns the indices of maximum values in tensor [t]. *)
 
-val argmin : t -> t
+(* val argmin : t -> t *)
 (** [argmin t] returns the indices of minimum values in tensor [t]. *)
 
-val dmean : t -> int -> t
+(* val dmean : t -> int -> t *)
 (** [dmean t dim] calculates the mean of elements along the specified dimension [dim] in tensor [t]. *)
 
-val dvariance : t -> int -> t
+(* val dvariance : t -> int -> t *)
 (** [dvariance t dim] calculates the variance of elements along the specified dimension [dim] in tensor [t]. *)
 
-val dstd : t -> int -> t
+(* val dstd : t -> int -> t *)
 (** [dstd t dim] calculates the standard deviation of elements along the specified dimension [dim] in tensor [t]. *)
 
-val dnormalize : t -> int -> t
+(* val dnormalize : t -> int -> t *)
 (** [dnormalize t dim] normalizes tensor [t] along dimension [dim] to have mean 0 and std 1. *)
 
-val log : t -> t
+(* val log : t -> t *)
 (** [log t] computes the natural logarithm of each element in tensor [t]. *)
 
-val pow : t -> int -> t
+(* val pow : t -> int -> t *)
 (** [pow t x] raises each element in tensor [t] to the power of [x]. *)
 
-val sqrt : t -> t
+(* val sqrt : t -> t *)
 (** [sqrt t] computes the square root of each element in tensor [t]. *)
 
 (* Utility functions *)
-val clone : t -> t
+(* val clone : t -> t *)
 (** [clone t] creates a deep copy of tensor [t], including data and gradient. *)
 
-val can_broadcast : t -> t -> bool
+(* val can_broadcast : t -> t -> bool *)
 (** [can_broadcast t1 t2] checks if tensors [t1] and [t2] have compatible shapes for broadcasting. *)
 
-val detach : t -> t
+(* val detach : t -> t *)
 (** [detach t] returns a copy of tensor [t] without gradient tracking. *)
 
-val dmin : t -> int -> t
+(* val dmin : t -> int -> t *)
 (** [dmin t dim] finds the minimum values along the specified dimension [dim] in tensor [t]. *)
 
-val dargmax : t -> int -> t
+(* val dargmax : t -> int -> t *)
 (** [dargmax t dim] returns the indices of maximum values along the specified dimension [dim] in tensor [t]. *)
 
-val dargmin : t -> int -> t
+(* val dargmin : t -> int -> t *)
 (** [dargmin t dim] returns the indices of minimum values along the specified dimension [dim] in tensor [t]. *)

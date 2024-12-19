@@ -515,6 +515,142 @@ let test_log_softmax _ =
     assert_bool "Slice forward"
       (float_ndarray_equal ~epsilon:eps out.T.data expected_data)
 
+let test_dsum _ =
+  (* Define a 2x3 tensor for testing sum along different dimensions *)
+  let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.|] [|2;3|]) in
+
+  (* Sum along dimension 0 (rows) -> output shape should be [|3|] *)
+  let out_dim0 = T.dsum t 0 in
+  let expected_dim0 = N.create [|5.;7.;9.|] [|3|] in
+  assert_bool "Sum along dim 0" (float_ndarray_equal ~epsilon:eps out_dim0.T.data expected_dim0);
+
+  (* Backward *)
+  T.zero_grad t; T.zero_grad out_dim0;
+  out_dim0.T.grad <- N.ones [|3|]; (* gradient is all ones for dim 0 sum *)
+  
+  (match out_dim0.T.backward_fn with
+    | Some fn -> fn ()
+    | None -> assert_failure "No backward for dim 0 sum");
+
+
+  (* Gradient checks:
+      For t (original shape [2;3]), the gradient for sum along dim 0 should be the broadcasted gradient,
+      and the gradient for sum along dim 1 should be summed over the corresponding dimension. *)
+  
+  (* For dim 0 (sum along rows), grad is [1.; 1.; 1.] repeated across all rows. *)
+  let expected_grad_dim0 = N.create [|1.;1.;1.;1.;1.;1.|] [|2;3|] in
+  Printf.printf "66666666666666 grad: %s\n" (Ndarray.to_string t.T.grad);
+  assert_bool "Grad t (dim 0 sum)" (float_ndarray_equal ~epsilon:eps t.T.grad expected_grad_dim0);
+
+  Printf.printf "test_dsum passed.\n"
+      
+let test_dmax _ =
+  (* Define a 2x3 tensor for testing max along different dimensions *)
+  let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.|] [|2;3|]) in
+
+  (* Max along dimension 0 (rows) -> output shape should be [|3|] *)
+  let out_dim0 = T.dmax t 0 in
+  let expected_dim0 = N.create [|4.;5.;6.|] [|3|] in
+  assert_bool "Max along dim 0" (float_ndarray_equal ~epsilon:eps out_dim0.T.data expected_dim0);
+
+  (* Max along dimension 1 (columns) -> output shape should be [|2|] *)
+  let out_dim1 = T.dmax t 1 in
+  let expected_dim1 = N.create [|3.;6.|] [|2|] in
+  assert_bool "Max along dim 1" (float_ndarray_equal ~epsilon:eps out_dim1.T.data expected_dim1);
+
+  (* Backward *)
+  T.zero_grad t; T.zero_grad out_dim0; T.zero_grad out_dim1;
+  out_dim0.T.grad <- N.ones [|3|]; (* gradient is all ones for dim 0 max *)
+  out_dim1.T.grad <- N.ones [|2|]; (* gradient is all ones for dim 1 max *)
+
+  (match out_dim0.T.backward_fn with
+    | Some fn -> fn ()
+    | None -> assert_failure "No backward for dim 0 max");
+
+  (match out_dim1.T.backward_fn with
+    | Some fn -> fn ()
+    | None -> assert_failure "No backward for dim 1 max");
+
+  (* Gradient checks:
+      For t (original shape [2;3]), the gradient for max along dim 0 should be the broadcasted gradient,
+      and the gradient for max along dim 1 should be the maximum value gradient for the corresponding element. *)
+
+  Printf.printf "test_dmax passed.\n"
+
+let test_exp _ =
+  (* Define a 2x3 tensor for testing exp *)
+  let t = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.|] [|2;3|]) in
+
+  (* Element-wise exp -> output shape should be [|2;3|] *)
+  let out = T.exp t in
+  let expected = N.create [|exp 1.; exp 2.; exp 3.; exp 4.; exp 5.; exp 6.|] [|2;3|] in
+  assert_bool "Element-wise exp" (float_ndarray_equal ~epsilon:eps out.T.data expected);
+
+  (* Backward *)
+  T.zero_grad t; T.zero_grad out;
+  out.T.grad <- N.ones [|2;3|]; (* gradient is all ones for exp *)
+
+  (match out.T.backward_fn with
+    | Some fn -> fn ()
+    | None -> assert_failure "No backward for exp");
+
+  (* Gradient check:
+      For exp, the gradient should be the exp of each element: grad = exp(t). *)
+  let expected_grad = N.create [|exp 1.; exp 2.; exp 3.; exp 4.; exp 5.; exp 6.|] [|2;3|] in
+  assert_bool "Grad t (exp)" (float_ndarray_equal ~epsilon:eps t.T.grad expected_grad);
+
+  Printf.printf "test_exp passed.\n"
+  
+let test_conv2d _ =
+  (* Define a 2x3 input tensor *)
+  let input = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.; 7.; 8.; 9.|] [|1; 1; 3; 3|]) in
+  (* Define a 1x1 kernel tensor *)
+  let kernel = T.from_ndarray (N.create [|1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0; 1.0|] [|1; 1; 3; 3|]) in
+
+  (* Perform 2D convolution with stride 1 and padding 0 *)
+  let output = T.conv2d input kernel ~stride:1 ~padding:0 in
+  let expected_output = N.create [| 45.0 |] [|1; 1; 1; 1|] in
+  assert_bool "Conv2D forward pass" (float_ndarray_equal ~epsilon:eps output.T.data expected_output);
+
+  (* Backward pass *)
+  T.zero_grad input; T.zero_grad kernel; T.zero_grad output;
+  output.T.grad <- N.ones [|1; 1; 1; 1|]; (* gradient is all ones for output *)
+  Printf.printf "test_conv2d passed.\n"
+    
+
+let test_meanpool2d _ =
+  (* Define a 1x1x4x4 input tensor *)
+  let input = T.from_ndarray (N.create [|1.; 2.; 3.; 4.; 5.; 6.; 7.; 8.; 9.; 10.; 11.; 12.; 13.; 14.; 15.; 16.|] [|1; 1; 4; 4|]) in
+  (* Define a 2x2 kernel *)
+  let kernel_size = 2 in
+  let stride = 2 in
+
+  (* Perform mean pooling with stride 2 and kernel size 2 *)
+  let output = T.meanpool2d input ~kernel_size ~stride in
+  let expected_output = N.create [|3.5; 5.5; 11.5; 13.5|] [|1; 1; 2; 2|] in
+  assert_bool "Meanpool2d forward pass" (float_ndarray_equal ~epsilon:eps output.T.data expected_output);
+
+  (* Backward pass *)
+  T.zero_grad input; T.zero_grad output;
+  output.T.grad <- N.ones [|1; 1; 2; 2|]; (* gradient is all ones for output *)
+
+  (match output.T.backward_fn with
+    | Some fn -> fn ()
+    | None -> assert_failure "No backward function for meanpool2d");
+
+  (* Check gradients: 
+      - The gradient for each input element should be evenly distributed across the pooled region.
+      - Since grad_output is all ones, the input grad should be 0.25 for each element in the pooled region. *)
+
+  let expected_grad_input = N.create [|0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25; 0.25|] [|1; 1; 4; 4|] in
+  assert_bool "Grad input for meanpool2d" (float_ndarray_equal ~epsilon:eps input.T.grad expected_grad_input);
+
+  Printf.printf "test_meanpool2d passed.\n"
+let test_tensor_to_string _ =
+  let data = N.create [|1.; 2.; 3.; 4.|] [|2;2|] in
+  let t = T.{ data=data; requires_grad = true; grad = N.zeros [|2;2|]; backward_fn = None; prev = [] } in
+  let result = T.to_string t in
+  print_endline result  (* Should print something like: Tensor {data = [[1.0; 2.0]; [3.0; 4.0]], requires_grad = Yes} *)
 let suite =
   "Test Tensor Broadcast" >::: [
     "test_broadcast_add" >:: test_broadcast_add;
@@ -540,6 +676,12 @@ let suite =
     "test_softmax" >:: test_softmax;
     "test_log_softmax" >:: test_log_softmax;
     "test_slice" >:: test_slice;
+    "test_dsum" >:: test_dsum;
+    "test_dmax" >:: test_dmax;
+    "test_exp" >:: test_exp;
+    "test_conv2d" >:: test_conv2d;
+    "test_tensor_to_string" >:: test_tensor_to_string;
+    "test_meanpool2d" >:: test_meanpool2d;
   ]
 
 let () =

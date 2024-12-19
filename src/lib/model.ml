@@ -96,7 +96,8 @@ let create_MSE () =
   let forward_fn inputs =
     let logits = List.nth_exn inputs 0 in
     let targets = List.nth_exn inputs 1 in
-    let loss = Tensor.mean (Tensor.pow (Tensor.sub logits targets) 2) in
+    let diff = Tensor.sub logits targets in
+    let loss = Tensor.mean ~dim:0 (Tensor.dsum (Tensor.mul diff diff) 1)  in
     loss
   in
   create ~parameters:[] ~forward_fn
