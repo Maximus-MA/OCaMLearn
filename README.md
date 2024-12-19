@@ -1,4 +1,4 @@
-# OCaml machine learning framework
+# OCaMLearn (OCaml machine learning framework)
 
 ## Overview
 
